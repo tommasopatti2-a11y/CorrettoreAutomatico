@@ -982,7 +982,6 @@ def run_app():
     
     # Intestazione UI
     st.title("📐 Risolutore di Matematica & Fisica")
-    st.caption("✨ Risoluzione didattica automatizzata per scuola secondaria — *Realizzato dal Prof. Tommaso Patti*")
     
     # Barra laterale per i controlli interattivi
     with st.sidebar:
@@ -1026,8 +1025,8 @@ def run_app():
         
         st.write("---")
         st.markdown(
-            "<div style='text-align: center; color: #475569; font-size: 0.88rem; font-weight: 500; margin-bottom: 0.5rem;'>"
-            "🎓 <i>Realizzato dal Prof. Tommaso Patti</i>"
+            "<div style='display: flex; align-items: center; gap: 8px; color: #2D3748; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem;'>"
+            "<span>🎓</span><span>Realizzato dal Prof. Tommaso Patti</span>"
             "</div>",
             unsafe_allow_html=True
         )
