@@ -1030,11 +1030,13 @@ def run_app():
             "</div>",
             unsafe_allow_html=True
         )
-        st.caption(
-            "🔒 **Informativa Privacy & Sicurezza (Pilot Privato)**\n\n"
-            "I compiti caricati vengono elaborati in memoria ed inviati all'API Gemini unicamente per l'estrazione e la risoluzione. "
-            "I file temporanei vengono distrutti al termine della sessione. Per questo pilot, utilizzare documenti privi di dati personali o identificativi di minori."
-        )
+        with st.expander("🔒 Privacy & Trattamento Dati (Pilot)"):
+            st.caption(
+                "Questa applicazione è configurata per un pilot didattico privato tra collaboratori autorizzati:\n\n"
+                "• **Nessun Salvataggio Permanente:** I file caricati vengono elaborati in memoria temporanea e distrutti alla fine della sessione.\n\n"
+                "• **Anonimizzazione:** Caricare unicamente il testo dei quesiti; non includere intestazioni con dati personali, nomi o voti di studenti.\n\n"
+                "• **Fornitore AI:** L'elaborazione avviene tramite API Google Gemini; nessun dato viene registrato o utilizzato per addestrare modelli pubblici."
+            )
         
     # Area principale caricamento file
     st.write("Trascina o carica uno o più compiti di matematica e fisica (PDF, DOCX, TXT, PNG, JPG). L'applicazione estrarrà il testo e le immagini, identificherà i singoli quesiti e li risolverà sequenzialmente.")
