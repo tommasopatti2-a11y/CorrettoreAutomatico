@@ -1,0 +1,30 @@
+# File sensibili
+.env
+.streamlit/secrets.toml
+api_key.txt
+private_key.pem
+*.key
+
+# Directory di test e scratch
+scratch/
+
+# Ambienti virtuali
+.venv/
+venv/
+ENV/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# File temporanei ed elementi generati
+temp_images/
+*.tmp
+*.temp
+
+# Log di task
+*.log
+task_log/
+task_logs/
