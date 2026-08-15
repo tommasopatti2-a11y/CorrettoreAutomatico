@@ -104,6 +104,18 @@ st.markdown(
         background-color: #FFFFFF;
         border-radius: 8px;
     }
+    
+    /* Nascondi elementi nativi di Streamlit (Menu tre puntini, Fork, GitHub e Footer) */
+    #MainMenu {visibility: hidden !important; display: none !important;}
+    header[data-testid="stHeader"] {visibility: hidden !important; display: none !important;}
+    footer {visibility: hidden !important; display: none !important;}
+    div[data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
+    div[data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
+    div[data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
+    .viewerBadge_container__1QSob, .viewerBadge_link__1S137, [data-testid="manage-app-button"] {
+        visibility: hidden !important;
+        display: none !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
