@@ -982,6 +982,7 @@ def run_app():
     
     # Intestazione UI
     st.title("📐 Risolutore di Matematica & Fisica")
+    st.caption("✨ Risoluzione didattica automatizzata per scuola secondaria — *Realizzato dal Prof. Tommaso Patti*")
     
     # Barra laterale per i controlli interattivi
     with st.sidebar:
@@ -1024,6 +1025,12 @@ def run_app():
         )
         
         st.write("---")
+        st.markdown(
+            "<div style='text-align: center; color: #475569; font-size: 0.88rem; font-weight: 500; margin-bottom: 0.5rem;'>"
+            "🎓 <i>Realizzato dal Prof. Tommaso Patti</i>"
+            "</div>",
+            unsafe_allow_html=True
+        )
         st.caption(
             "🔒 **Informativa Privacy & Sicurezza (Pilot Privato)**\n\n"
             "I compiti caricati vengono elaborati in memoria ed inviati all'API Gemini unicamente per l'estrazione e la risoluzione. "
