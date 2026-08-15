@@ -34,7 +34,7 @@ def get_api_key():
 
 # Configurazione della pagina
 st.set_page_config(
-    page_title="Risolutore Matematica & Fisica",
+    page_title="Risolutore Matematica e Fisica",
     page_icon="📐",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -1039,7 +1039,7 @@ def run_app():
     api_key = get_api_key()
     
     # Intestazione UI
-    st.title("📐 Risolutore di Matematica & Fisica")
+    st.title("📐 Risolutore di Matematica e Fisica")
     
     # Barra laterale per i controlli interattivi
     with st.sidebar:
