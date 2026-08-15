@@ -105,16 +105,39 @@ st.markdown(
         border-radius: 8px;
     }
     
-    /* Nascondi elementi nativi di Streamlit (Menu tre puntini, Fork, GitHub e Footer) */
+    /* Nascondi elementi nativi di Streamlit (Menu tre puntini, Fork, GitHub, Footer e Badge Cloud) */
     #MainMenu {visibility: hidden !important; display: none !important;}
     header[data-testid="stHeader"] {visibility: hidden !important; display: none !important;}
     footer {visibility: hidden !important; display: none !important;}
     div[data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
     div[data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
     div[data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
-    .viewerBadge_container__1QSob, .viewerBadge_link__1S137, [data-testid="manage-app-button"] {
-        visibility: hidden !important;
+    [data-testid="manage-app-button"] {visibility: hidden !important; display: none !important;}
+    [data-testid="stAppDeployButton"] {visibility: hidden !important; display: none !important;}
+    
+    /* Badge 'Hosted with Streamlit', avatar e pulsanti galleggianti in basso a destra */
+    div[class*="viewerBadge"],
+    div[class*="ViewerBadge"],
+    a[class*="viewerBadge"],
+    a[class*="ViewerBadge"],
+    .viewerBadge_container__1QSob,
+    .viewerBadge_link__1S137,
+    .viewerBadge_text__1JaDK,
+    div[class*="stDeployButton"],
+    div[class*="floating-button"],
+    div[class*="FloatingButton"],
+    div[class*="bottom-bar"],
+    div[class*="BottomBar"],
+    div[class*="HostBadge"],
+    div[class*="hostBadge"],
+    div[class*="Avatar"],
+    div[class*="avatar"] {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
     }
     </style>
     """,
