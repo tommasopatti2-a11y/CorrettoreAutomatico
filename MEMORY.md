@@ -18,23 +18,27 @@ Valutazione dello stato attuale:
 
 ## Stato di Release e Gate Attivo
 
-- **Gate 0 (Contenimento)**: ✅ COMPLETATO. `app.py` compilabile ed eseguibile, isolamento chiavi, `.gitignore` hardening con blocco `.streamlit/secrets.toml` e `scratch/`.
+- **Gate 0 (Contenimento)**: ✅ COMPLETATO. Chiavi isolate, `index.html` rimosso definitivamente, cronologia Git bonificata al 100%, push su GitHub riuscito senza violazioni di sicurezza.
 - **Gate 1 (Baseline locale)**: ✅ COMPLETATO. Parser LaTeX 2-fasi definitivo (19/19 test ostili superati), 3 livelli di spiegazione didattica (Basso, Medio, Alto), ancoraggio immagini nella traccia, rasterizzazione multimodale ad alta risoluzione (150 DPI) per il 100% di fedeltà OCR, modello `gemini-3.7-flash`, flusso di revisione Human-in-the-Loop.
-- **Gate 2 (Pilot Privato Online)**: 🟡 PRONTO PER IL DEPLOYMENT. Preparati i file di sistema `packages.txt` (Pandoc + TeX Live), `requirements.txt` auditate, `DEPLOYMENT_GUIDE.md` e Privacy Notice integrata.
+- **Gate 2 (Pilot Privato Online)**: 🟡 PRONTO PER IL DEPLOYMENT. Codice caricato sul repository GitHub privato `tommasopatti2-a11y/CorrettoreAutomatico`. Presenti `packages.txt`, `requirements.txt` e `DEPLOYMENT_GUIDE.md`.
 
 ---
 
 ## Fatti Verificati e Decisioni Architetturali
 
-1. **PDF e LaTeX:**
+1. **Repository GitHub:**
+   - URL: `https://github.com/tommasopatti2-a11y/CorrettoreAutomatico`
+   - Branch principale: `main` (commit iniziale pulito `1df4447`).
+   - `index.html` eliminato definitivamente; nessun segreto esposto nella cronologia Git.
+2. **PDF e LaTeX:**
    - La compilazione PDF è stabile ed immune da crash di sintassi o parametri grazie a `sanitize_latex_for_pandoc` a due fasi.
    - I margini PDF sono impostati a 2 cm uniformi (`geometry:margin=2cm`).
-2. **Visione e OCR:**
+3. **Visione e OCR:**
    - I file PDF vengono sempre rasterizzati a 150 DPI per fornire a Gemini la rappresentazione visiva fedele delle formule.
    - `gemini-3.7-flash` è il modello primario sia per la visione sia per la risoluzione con Code Execution.
-3. **Flusso UX:**
+4. **Flusso UX:**
    - L'applicazione opera in 3 fasi: 1. Caricamento ➔ 2. Revisione Interattiva Tracce ➔ 3. Risoluzione & Download (.docx / .pdf).
-4. **Deployment Cloud:**
+5. **Deployment Cloud:**
    - Piattaforma target per il pilot privato: **Streamlit Community Cloud** (repo privato con email allowlist) o Container Docker.
    - Dipendenze di sistema dichiarate in `packages.txt` (`pandoc`, `texlive-latex-base`, `texlive-latex-recommended`, `texlive-latex-extra`, `texlive-fonts-recommended`, `lmodern`, `ghostscript`).
 5. **Segreti e credenziali:**
