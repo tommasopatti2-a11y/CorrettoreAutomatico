@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: correttore-automatico
+    env: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
