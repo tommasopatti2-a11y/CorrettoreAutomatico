@@ -57,6 +57,29 @@ st.markdown(
         font-weight: 700;
     }
     
+    /* Riduzione spazio bianco superiore per area principale e sidebar */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+    }
+    
+    section[data-testid="stSidebar"] div[data-testid="stSidebarContent"],
+    section[data-testid="stSidebar"] > div {
+        padding-top: 1.5rem !important;
+    }
+    
+    /* Azzeramento margini superiori dei titoli */
+    h1 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
     /* Barra laterale pastello */
     section[data-testid="stSidebar"] {
         background-color: #E3F2FD !important;
