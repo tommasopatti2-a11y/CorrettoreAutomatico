@@ -128,9 +128,26 @@ st.markdown(
         border-radius: 8px;
     }
     
-    /* Nascondi elementi nativi di Streamlit (Menu tre puntini, Fork, GitHub, Footer e Badge Cloud) */
+    /* Header trasparente per consentire il funzionamento del pulsante di apertura sidebar */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+    }
+    
+    /* Forza la piena visibilità e interattività del pulsante di apertura/chiusura sidebar su mobile e desktop */
+    div[data-testid="stSidebarCollapsedControl"],
+    button[data-testid="stSidebarCollapseButton"],
+    button[data-testid="baseButton-headerNoPadding"],
+    div[data-testid="stSidebarHeader"],
+    div[data-testid="stSidebarCollapsedControl"] button {
+        visibility: visible !important;
+        display: flex !important;
+        opacity: 1 !important;
+        color: #2D3748 !important;
+        z-index: 999999 !important;
+    }
+    
+    /* Nascondi solo i menu e toolbar esterne (tre puntini, Fork, deploy, footer) */
     #MainMenu {visibility: hidden !important; display: none !important;}
-    header[data-testid="stHeader"] {visibility: hidden !important; display: none !important;}
     footer {visibility: hidden !important; display: none !important;}
     div[data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
     div[data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
