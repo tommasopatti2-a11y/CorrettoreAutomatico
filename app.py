@@ -133,23 +133,48 @@ st.markdown(
         background: transparent !important;
     }
     
-    /* Forza la piena visibilità e interattività del pulsante di apertura/chiusura sidebar su mobile e desktop */
+    /* Pulsante di riapertura sidebar sempre visibile ed evidente su mobile e desktop */
     div[data-testid="stSidebarCollapsedControl"],
-    button[data-testid="stSidebarCollapseButton"],
-    button[data-testid="baseButton-headerNoPadding"],
+    [data-testid="collapsedControl"],
+    header button[aria-label="Open sidebar"],
+    header button[data-testid="baseButton-headerNoPadding"],
     div[data-testid="stSidebarHeader"],
-    div[data-testid="stSidebarCollapsedControl"] button {
+    button[data-testid="stSidebarCollapseButton"] {
         visibility: visible !important;
         display: flex !important;
         opacity: 1 !important;
-        color: #2D3748 !important;
-        z-index: 999999 !important;
+        position: fixed !important;
+        top: 0.6rem !important;
+        left: 0.6rem !important;
+        z-index: 9999999 !important;
+        background-color: #2A9D8F !important;
+        color: #FFFFFF !important;
+        border-radius: 8px !important;
+        box-shadow: 0px 3px 10px rgba(42, 157, 143, 0.35) !important;
+        padding: 0.35rem 0.6rem !important;
+        cursor: pointer !important;
+    }
+
+    div[data-testid="stSidebarCollapsedControl"] svg,
+    [data-testid="collapsedControl"] svg,
+    header button[aria-label="Open sidebar"] svg,
+    button[data-testid="stSidebarCollapseButton"] svg {
+        fill: #FFFFFF !important;
+        color: #FFFFFF !important;
+        stroke: #FFFFFF !important;
     }
     
-    /* Nascondi solo i menu e toolbar esterne (tre puntini, Fork, deploy, footer) */
+    div[data-testid="stSidebarCollapsedControl"]:hover,
+    header button[aria-label="Open sidebar"]:hover {
+        background-color: #218376 !important;
+        transform: scale(1.05);
+    }
+    
+    /* Nascondi solo i menu e toolbar esterne a destra (tre puntini, Fork, deploy, footer) */
     #MainMenu {visibility: hidden !important; display: none !important;}
     footer {visibility: hidden !important; display: none !important;}
-    div[data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
+    [data-testid="stToolbarActions"] {visibility: hidden !important; display: none !important;}
+    [data-testid="stToolbarActionButton"] {visibility: hidden !important; display: none !important;}
     div[data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
     div[data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
     [data-testid="manage-app-button"] {visibility: hidden !important; display: none !important;}
