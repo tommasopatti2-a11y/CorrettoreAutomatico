@@ -19,35 +19,35 @@ Valutazione dello stato attuale:
 ## Stato di Release e Gate Attivo
 
 - **Gate 0 (Contenimento)**: ✅ COMPLETATO. Chiavi isolate, `index.html` rimosso definitivamente, cronologia Git bonificata al 100%, push su GitHub riuscito senza violazioni di sicurezza.
-- **Gate 1 (Baseline locale)**: ✅ COMPLETATO. Parser LaTeX 2-fasi definitivo (19/19 test ostili superati), 3 livelli di spiegazione didattica (Basso, Medio, Alto), ancoraggio immagini nella traccia, rasterizzazione multimodale ad alta risoluzione (150 DPI) per il 100% di fedeltà OCR, modello `gemini-3.7-flash`, flusso di revisione Human-in-the-Loop.
-- **Gate 2 (Pilot Privato Online)**: 🟡 PRONTO PER IL DEPLOYMENT. Codice caricato sul repository GitHub privato `tommasopatti2-a11y/CorrettoreAutomatico`. Presenti `packages.txt`, `requirements.txt` e `DEPLOYMENT_GUIDE.md`.
+- **Gate 1 (Baseline locale)**: ✅ COMPLETATO. Parser LaTeX 2-fasi definitivo (19/19 test ostili superati), 3 livelli di spiegazione didattica (Basso, Medio, Alto), ancoraggio immagini nella traccia, rasterizzazione multimodale ad alta risoluzione (150 DPI) per il 100% di fedeltà OCR, modello `gemini-3.7-flash`, flusso di revisione Human-in-the-Loop, sistema modulare di profili didattici ministeriali (`curriculum/*.md`).
+- **Gate 2 (Pilot Privato Online)**: 🟡 PRONTO PER IL DEPLOYMENT. Codice caricato sul repository GitHub privato `tommasopatti2-a11y/CorrettoreAutomatico` con `Dockerfile` e `render.yaml` per Render.com e `packages.txt` per Streamlit Cloud.
 
 ---
 
 ## Fatti Verificati e Decisioni Architetturali
 
-1. **Repository GitHub:**
+1. **Profili Didattici Ministeriali e Vincoli Negativi:**
+   - Creata la directory `curriculum/` con 6 profili Markdown dedicati (`scuola_media.md`, `anno_1.md`, `anno_2.md`, `anno_3.md`, `anno_4.md`, `anno_5.md`).
+   - Ciascun profilo definisce l'identità del docente (ruolo), la whitelist degli strumenti ammessi e la blacklist dei metodi vietati (blocco di tecniche universitarie come Taylor $>1$, operatori vettoriali differenziali, integrali doppi/tripli, meccanica lagrangiana).
+   - In `app.py`, `build_system_prompt` carica dinamicamente il profilo dell'anno scolastico selezionato.
+2. **Repository GitHub:**
    - URL: `https://github.com/tommasopatti2-a11y/CorrettoreAutomatico`
-   - Branch principale: `main` (commit iniziale pulito `1df4447`).
-   - `index.html` eliminato definitivamente; nessun segreto esposto nella cronologia Git.
-2. **PDF e LaTeX:**
+   - Branch principale: `main`.
+   - `Dockerfile` e `render.yaml` configurati per il deployment senza watermark.
+3. **PDF e LaTeX:**
    - La compilazione PDF è stabile ed immune da crash di sintassi o parametri grazie a `sanitize_latex_for_pandoc` a due fasi.
    - I margini PDF sono impostati a 2 cm uniformi (`geometry:margin=2cm`).
-3. **Visione e OCR:**
+4. **Visione e OCR:**
    - I file PDF vengono sempre rasterizzati a 150 DPI per fornire a Gemini la rappresentazione visiva fedele delle formule.
    - `gemini-3.7-flash` è il modello primario sia per la visione sia per la risoluzione con Code Execution.
-4. **Flusso UX:**
+5. **Flusso UX:**
    - L'applicazione opera in 3 fasi: 1. Caricamento ➔ 2. Revisione Interattiva Tracce ➔ 3. Risoluzione & Download (.docx / .pdf).
-5. **Deployment Cloud:**
-   - Piattaforma target per il pilot privato: **Streamlit Community Cloud** (repo privato con email allowlist) o Container Docker.
-   - Dipendenze di sistema dichiarate in `packages.txt` (`pandoc`, `texlive-latex-base`, `texlive-latex-recommended`, `texlive-latex-extra`, `texlive-fonts-recommended`, `lmodern`, `ghostscript`).
-5. **Segreti e credenziali:**
+6. **Segreti e credenziali:**
    - Nessun segreto salvato nei file sorgente o versionabili. `api_key.txt` è stato eliminato e rimosso.
-5. **Isolamento per job:** nessun `temp_images` globale o nome output condiviso.
-6. **Zero trust interno:** upload, testo estratto, output AI, Markdown, path e documenti generati sono non attendibili fino a validazione.
-7. **Privacy by default:** retention nulla oltre il job/download e documenti del pilot privi di dati personali.
-8. **Qualità verificabile:** nessuna funzione è “completa” senza test; DOCX/PDF richiedono render e ispezione.
-9. **Risoluzione LaTeX pdflatex:** L'algoritmo di sanitizzazione dei dollari spaiati, parentesi sbilanciate e caratteri speciali è ora al 100% stabile e coperto da test.
+7. **Isolamento per job:** nessun `temp_images` globale o nome output condiviso.
+8. **Zero trust interno:** upload, testo estratto, output AI, Markdown, path e documenti generati sono non attendibili fino a validazione.
+9. **Privacy by default:** retention nulla oltre il job/download e documenti del pilot privi di dati personali.
+10. **Qualità verificabile:** nessuna funzione è “completa” senza test; DOCX/PDF richiedono render e ispezione.
 
 ## 3. Inventario corrente
 

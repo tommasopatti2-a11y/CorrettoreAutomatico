@@ -415,8 +415,36 @@ Regole per il parsing:
                     return []
     return []
 
+def load_curriculum_profile(anno_scolastico: str) -> str:
+    """Carica il profilo didattico, la whitelist e la blacklist ministeriale dal file markdown corrispondente."""
+    mapping = {
+        "Scuola Media (Secondaria di I grado)": "scuola_media.md",
+        "1° Anno (Prima)": "anno_1.md",
+        "2° Anno (Seconda)": "anno_2.md",
+        "3° Anno (Terza)": "anno_3.md",
+        "4° Anno (Quarta)": "anno_4.md",
+        "5° Anno (Quinta)": "anno_5.md"
+    }
+    
+    filename = mapping.get(anno_scolastico, "anno_5.md")
+    curriculum_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "curriculum")
+    file_path = os.path.join(curriculum_dir, filename)
+    
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except Exception:
+            pass
+            
+    # Fallback sintetico nel caso in cui il file non fosse accessibile
+    return f"Profilo per {anno_scolastico}: attenersi rigorosamente ai programmi ministeriali italiani evitando metodi di anni successivi o universitari."
+
 def build_system_prompt(dettaglio, anno_scolastico, indirizzo_studi=None):
     """Costruisce il system prompt personalizzato per Gemini seguendo le regole ministeriali e di stile."""
+    
+    # Caricamento dinamico delle linee guida del programma scolastico dell'anno selezionato
+    curriculum_profile = load_curriculum_profile(anno_scolastico)
     
     # Livello di dettaglio con istruzioni e vincoli stringenti
     if "Basso" in dettaglio:
@@ -438,17 +466,18 @@ def build_system_prompt(dettaglio, anno_scolastico, indirizzo_studi=None):
 - Teoremi e definizioni: Enuncia esplicitamente le definizioni formali, i teoremi, le proprietà analitiche e le leggi applicate (es. classificazione algebrica della funzione; condizioni di esistenza dei radicali con indice pari vs dispari; definizione di iniettività, suriettività e invertibilità con calcolo dell'inversa; studio del segno del trinomio di secondo grado con $\\Delta$; proprietà asintotiche e limiti notevoli delle funzioni esponenziali).
 - Interpretazione geometrica e critica: Descrivi il significato grafico nel piano cartesiano e analizza criticamente i risultati ottenuti."""
         
-    system_prompt = f"""Sei un assistente esperto nella risoluzione di problemi di matematica e fisica.
-Risolvi l'esercizio che ti viene fornito in modo impeccabile, formattando tutto il testo matematico in LaTeX standard.
+    system_prompt = f"""Sei un docente e assistente didattico esperto nella risoluzione di problemi di matematica e fisica per la scuola italiana.
+Risolvi l'esercizio che ti viene fornito in modo didatticamente impeccabile e rigoroso, formattando tutto il testo matematico in LaTeX standard.
 
-REGOLE COMPORTAMENTALI:
+REGOLE COMPORTAMENTALI E PEDAGOGICHE:
 
 {dettaglio_istruzioni}
 
-B. ADATTAMENTO AL CONTESTO SCOLASTICO (Programmi ministeriali italiani):
-- Anno scolastico: {anno_scolastico}
-Adatta rigorosamente gli strumenti matematici, i teoremi utilizzabili, il livello di astrazione e il formalismo del linguaggio a questo profilo dello studente in conformità alle Indicazioni Nazionali del Ministero dell'Istruzione italiano. 
-Ad esempio, NON utilizzare metodi avanzati (es. limiti, derivate o integrali) per classi inferiori alla quinta superiore, o per contesti in cui tali strumenti non sono previsti dal programma ministeriale, a meno che non sia strettamente necessario o richiesto in modo esplicito.
+B. INQUADRAMENTO PEDAGOGICO E LIMITI MINISTERIALI:
+{curriculum_profile}
+
+REGOLA AUREA DELLA DIDATTICA SCOLASTICA:
+Se un problema sembra richiedere strumenti o teoremi avanzati o universitari (es. sviluppi di Taylor, integrali doppi, operatori differenziali, meccanica lagrangiana), significa che esiste SEMPRE una soluzione alternativa basata su proprietà algebriche, simmetrie geometriche, teoremi o limiti notevoli previsti dal programma dell'anno scolastico selezionato. DEVI TROVARE E USARE ESCLUSIVAMENTE QUESTA STRADA SCOLASTICA.
 
 C. REGOLE SPECIFICHE PER LA FISICA E LA MATEMATICA:
 1. Dichiarazione dei dati e delle costanti: All'inizio di ogni soluzione di fisica, devi creare un elenco dei dati noti estratti dal testo e delle costanti fisiche universali o tabellate adottate (es. $g = 9.81 \\text{{ m/s}}^2$), con le relative unità di misura.
