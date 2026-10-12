@@ -72,39 +72,50 @@ st.markdown(
         border-right: 1px solid #CFD8DC;
     }
     
-    /* Contenuto sidebar: spazio in alto generoso e scritte ben spostate verso destra */
+    /* Contenuto sidebar: allineamento pulito e lineare a sinistra */
     section[data-testid="stSidebar"] div[data-testid="stSidebarContent"] {
-        padding-top: 3.8rem !important;
-        padding-left: 2.8rem !important;
-        padding-right: 1.6rem !important;
+        padding-top: 1rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
     }
     
-    /* Header della sidebar con pulsante compatto e non invadente */
+    /* Header della sidebar: contenitore con pulsante ancorato sul bordo destro */
     section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] {
-        padding-top: 0.8rem !important;
-        padding-left: 1rem !important;
-        padding-bottom: 0.2rem !important;
-        min-height: 42px !important;
+        position: relative !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        padding: 0.6rem 0.8rem 0.2rem 0.8rem !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
     }
     
-    /* Titoli della sidebar spostati marcatamente verso destra */
+    /* Titoli della sidebar allineati coerentemente a sinistra */
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
     section[data-testid="stSidebar"] h3 {
-        margin-top: 0.6rem !important;
+        margin-top: 0.4rem !important;
         padding-top: 0 !important;
-        padding-left: 1.2rem !important;
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+        text-align: left !important;
         margin-bottom: 0.8rem !important;
     }
     
-    /* Selettori, espansori, label e testi della sidebar spostati a destra */
+    /* Selettori, espansori, label e testi della sidebar perfettamente allineati a sinistra */
     section[data-testid="stSidebar"] .stSelectbox,
     section[data-testid="stSidebar"] .stExpander,
     section[data-testid="stSidebar"] .stMarkdown,
     section[data-testid="stSidebar"] .stRadio,
     section[data-testid="stSidebar"] label,
     section[data-testid="stSidebar"] p {
-        padding-left: 1.2rem !important;
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+        text-align: left !important;
+    }
+    
+    section[data-testid="stSidebar"] label p {
+        text-align: left !important;
     }
     
     /* Margine pulito per il titolo principale */
@@ -165,11 +176,38 @@ st.markdown(
         z-index: 100 !important;
     }
     
-    /* Pulsante di chiusura/apertura sidebar compatto, discreto e ridotto di dimensioni */
+    /* Pulsante di chiusura sidebar: ancorato sul BORDO DESTRO in alto */
     section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
     section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] button,
     section[data-testid="stSidebar"] button[aria-label="Close sidebar"],
-    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"],
+    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"] {
+        position: absolute !important;
+        top: 0.6rem !important;
+        right: 0.8rem !important;
+        left: auto !important;
+        margin: 0 !important;
+        visibility: visible !important;
+        display: inline-flex !important;
+        opacity: 1 !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        max-width: 28px !important;
+        max-height: 28px !important;
+        padding: 3px !important;
+        background-color: #2A9D8F !important;
+        color: #FFFFFF !important;
+        border-radius: 6px !important;
+        box-shadow: 0px 2px 5px rgba(42, 157, 143, 0.25) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 100 !important;
+    }
+    
+    /* Pulsante per riaprire la barra laterale quando è chiusa */
     div[data-testid="stSidebarCollapsedControl"],
     [data-testid="collapsedControl"],
     header button[aria-label="Open sidebar"],
@@ -184,7 +222,7 @@ st.markdown(
         max-width: 28px !important;
         max-height: 28px !important;
         padding: 3px !important;
-        margin: 0.35rem !important;
+        margin: 0.5rem !important;
         background-color: #2A9D8F !important;
         color: #FFFFFF !important;
         border-radius: 6px !important;
@@ -221,13 +259,13 @@ st.markdown(
     /* Regole Desktop (>= 769px) */
     @media (min-width: 769px) {
         section[data-testid="stSidebar"] div[data-testid="stSidebarContent"] {
-            padding-top: 3.8rem !important;
-            padding-left: 2.8rem !important;
-            padding-right: 1.6rem !important;
+            padding-top: 1rem !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
         }
         
         .block-container {
-            padding-top: 2.4rem !important;
+            padding-top: 2.2rem !important;
             padding-left: 2.5rem !important;
             padding-right: 2.5rem !important;
         }
@@ -236,9 +274,9 @@ st.markdown(
     /* Regole Mobile (<= 768px) */
     @media (max-width: 768px) {
         section[data-testid="stSidebar"] div[data-testid="stSidebarContent"] {
-            padding-top: 3.8rem !important;
-            padding-left: 2.5rem !important;
-            padding-right: 1.4rem !important;
+            padding-top: 1rem !important;
+            padding-left: 1.2rem !important;
+            padding-right: 1.2rem !important;
         }
         
         .block-container {
