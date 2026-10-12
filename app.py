@@ -40,7 +40,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS Custom per applicare un look pastello premium
+# CSS Custom per applicare un look pastello premium e prevenire sovrapposizioni
 st.markdown(
     """
     <style>
@@ -57,33 +57,62 @@ st.markdown(
         font-weight: 700;
     }
     
-    /* Riduzione spazio bianco superiore per area principale e sidebar */
+    /* Spaziatura per l'area principale: scritte spostate a destra con margini generosi */
     .block-container {
-        padding-top: 1.5rem !important;
-        padding-bottom: 2rem !important;
-    }
-    
-    section[data-testid="stSidebar"] div[data-testid="stSidebarContent"],
-    section[data-testid="stSidebar"] > div {
-        padding-top: 1.5rem !important;
-    }
-    
-    /* Azzeramento margini superiori dei titoli */
-    h1 {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    section[data-testid="stSidebar"] h1,
-    section[data-testid="stSidebar"] h2 {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
+        padding-top: 3.8rem !important;
+        padding-bottom: 2.5rem !important;
+        padding-left: 2.8rem !important;
+        padding-right: 2.5rem !important;
+        max-width: 1250px !important;
     }
     
     /* Barra laterale pastello */
     section[data-testid="stSidebar"] {
         background-color: #E3F2FD !important;
         border-right: 1px solid #CFD8DC;
+    }
+    
+    /* Contenuto sidebar: spazio in alto generoso e scritte ben spostate verso destra */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarContent"] {
+        padding-top: 3.8rem !important;
+        padding-left: 2.8rem !important;
+        padding-right: 1.6rem !important;
+    }
+    
+    /* Header della sidebar con pulsante compatto e non invadente */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] {
+        padding-top: 0.8rem !important;
+        padding-left: 1rem !important;
+        padding-bottom: 0.2rem !important;
+        min-height: 42px !important;
+    }
+    
+    /* Titoli della sidebar spostati marcatamente verso destra */
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        margin-top: 0.6rem !important;
+        padding-top: 0 !important;
+        padding-left: 1.2rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+    
+    /* Selettori, espansori, label e testi della sidebar spostati a destra */
+    section[data-testid="stSidebar"] .stSelectbox,
+    section[data-testid="stSidebar"] .stExpander,
+    section[data-testid="stSidebar"] .stMarkdown,
+    section[data-testid="stSidebar"] .stRadio,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] p {
+        padding-left: 1.2rem !important;
+    }
+    
+    /* Margine pulito per il titolo principale */
+    h1 {
+        margin-top: 0.2rem !important;
+        padding-top: 0 !important;
+        margin-bottom: 0.4rem !important;
+        padding-left: 0.2rem !important;
     }
     
     /* Contenitori e schede */
@@ -103,7 +132,7 @@ st.markdown(
         padding: 0.6rem 1.8rem;
         font-weight: 600;
         font-size: 1rem;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
         box-shadow: 0px 4px 6px rgba(42, 157, 143, 0.2);
     }
     
@@ -119,55 +148,104 @@ st.markdown(
     div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]) {
         border-radius: 8px;
         font-weight: 600;
+        transition: all 0.2s ease;
     }
     
     /* File Uploader styling */
     section[data-testid="stFileUploadDropzone"] {
         border: 2px dashed #2A9D8F;
         background-color: #FFFFFF;
-        border-radius: 8px;
+        border-radius: 10px;
+        padding: 1.5rem;
     }
     
-    /* Header trasparente per consentire il funzionamento del pulsante di apertura sidebar */
+    /* Header naturale e pulito: non copre i titoli */
     header[data-testid="stHeader"] {
         background: transparent !important;
+        z-index: 100 !important;
     }
     
-    /* Pulsante di riapertura sidebar sempre visibile ed evidente su mobile e desktop */
+    /* Pulsante di chiusura/apertura sidebar compatto, discreto e ridotto di dimensioni */
+    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
+    section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] button,
+    section[data-testid="stSidebar"] button[aria-label="Close sidebar"],
+    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"],
     div[data-testid="stSidebarCollapsedControl"],
     [data-testid="collapsedControl"],
     header button[aria-label="Open sidebar"],
-    header button[data-testid="baseButton-headerNoPadding"],
-    div[data-testid="stSidebarHeader"],
-    button[data-testid="stSidebarCollapseButton"] {
+    header button[data-testid="baseButton-headerNoPadding"] {
         visibility: visible !important;
-        display: flex !important;
+        display: inline-flex !important;
         opacity: 1 !important;
-        position: fixed !important;
-        top: 0.6rem !important;
-        left: 0.6rem !important;
-        z-index: 9999999 !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        max-width: 28px !important;
+        max-height: 28px !important;
+        padding: 3px !important;
+        margin: 0.35rem !important;
         background-color: #2A9D8F !important;
         color: #FFFFFF !important;
-        border-radius: 8px !important;
-        box-shadow: 0px 3px 10px rgba(42, 157, 143, 0.35) !important;
-        padding: 0.35rem 0.6rem !important;
-        cursor: pointer !important;
+        border-radius: 6px !important;
+        box-shadow: 0px 2px 5px rgba(42, 157, 143, 0.25) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-
+    
+    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"]:hover,
+    section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] button:hover,
+    section[data-testid="stSidebar"] button[aria-label="Close sidebar"]:hover,
+    div[data-testid="stSidebarCollapsedControl"]:hover,
+    header button[aria-label="Open sidebar"]:hover {
+        background-color: #218376 !important;
+        transform: scale(1.06);
+    }
+    
+    section[data-testid="stSidebar"] button svg,
     div[data-testid="stSidebarCollapsedControl"] svg,
-    [data-testid="collapsedControl"] svg,
-    header button[aria-label="Open sidebar"] svg,
-    button[data-testid="stSidebarCollapseButton"] svg {
+    header button[aria-label="Open sidebar"] svg {
+        width: 14px !important;
+        height: 14px !important;
+        min-width: 14px !important;
+        min-height: 14px !important;
+        max-width: 14px !important;
+        max-height: 14px !important;
         fill: #FFFFFF !important;
         color: #FFFFFF !important;
         stroke: #FFFFFF !important;
     }
     
-    div[data-testid="stSidebarCollapsedControl"]:hover,
-    header button[aria-label="Open sidebar"]:hover {
-        background-color: #218376 !important;
-        transform: scale(1.05);
+    /* Regole Desktop (>= 769px) */
+    @media (min-width: 769px) {
+        section[data-testid="stSidebar"] div[data-testid="stSidebarContent"] {
+            padding-top: 3.8rem !important;
+            padding-left: 2.8rem !important;
+            padding-right: 1.6rem !important;
+        }
+        
+        .block-container {
+            padding-top: 2.4rem !important;
+            padding-left: 2.5rem !important;
+            padding-right: 2.5rem !important;
+        }
+    }
+    
+    /* Regole Mobile (<= 768px) */
+    @media (max-width: 768px) {
+        section[data-testid="stSidebar"] div[data-testid="stSidebarContent"] {
+            padding-top: 3.8rem !important;
+            padding-left: 2.5rem !important;
+            padding-right: 1.4rem !important;
+        }
+        
+        .block-container {
+            padding-top: 3.5rem !important;
+            padding-left: 1.2rem !important;
+            padding-right: 1.2rem !important;
+        }
     }
     
     /* Nascondi solo i menu e toolbar esterne a destra (tre puntini, Fork, deploy, footer) */
@@ -482,8 +560,8 @@ def load_curriculum_profile(anno_scolastico: str) -> str:
     # Fallback sintetico nel caso in cui il file non fosse accessibile
     return f"Profilo per {anno_scolastico}: attenersi rigorosamente ai programmi ministeriali italiani evitando metodi di anni successivi o universitari."
 
-def build_system_prompt(dettaglio, anno_scolastico, indirizzo_studi=None):
-    """Costruisce il system prompt personalizzato per Gemini seguendo le regole ministeriali e di stile."""
+def build_system_prompt(dettaglio, anno_scolastico, modalita_didattica="Sia soluzione che suggerimenti", indirizzo_studi=None):
+    """Costruisce il system prompt personalizzato per Gemini seguendo le regole ministeriali, di stile e di scaffolding didattico."""
     
     # Caricamento dinamico delle linee guida del programma scolastico dell'anno selezionato
     curriculum_profile = load_curriculum_profile(anno_scolastico)
@@ -508,6 +586,69 @@ def build_system_prompt(dettaglio, anno_scolastico, indirizzo_studi=None):
 - Teoremi e definizioni: Enuncia esplicitamente le definizioni formali, i teoremi, le proprietà analitiche e le leggi applicate (es. classificazione algebrica della funzione; condizioni di esistenza dei radicali con indice pari vs dispari; definizione di iniettività, suriettività e invertibilità con calcolo dell'inversa; studio del segno del trinomio di secondo grado con $\\Delta$; proprietà asintotiche e limiti notevoli delle funzioni esponenziali).
 - Interpretazione geometrica e critica: Descrivi il significato grafico nel piano cartesiano e analizza criticamente i risultati ottenuti."""
         
+    # Sezione Scaffolding Didattico e Struttura Output
+    if "Sia soluzione che suggerimenti" in modalita_didattica or "Scaffolding" in modalita_didattica:
+        struttura_output_istruzioni = """E. STRUTTURA OBBLIGATORIA DELL'OUTPUT (SUGGERIMENTI PROGRESSIVI + SOLUZIONE SU PAGINE SEPARATE):
+Devi imporre una struttura fissa per ogni esercizio. Prima della soluzione completa, DEVI fornire una sequenza di 3 SUGGERIMENTI PROGRESSIVI di chiarezza crescente, concepiti per sbloccare gradualmente lo studente.
+CRITICO: Tra i suggerimenti e la soluzione DEVI inserire il tag <!-- PAGE_BREAK --> per separare fisicamente il testo+suggerimenti dalla soluzione (andranno impaginati su due pagine distinte).
+
+1. **Suggerimento 1 (Orientamento concettuale e strategia):**
+   - Guida qualitativa: invita a riflettere sui principi fisici fondamentali (es. conservazione energia, equilibrio forze, calore scambiato) o sulle proprietà matematiche/geometriche in gioco.
+   - NON anticipare formule risolutive specifiche né valori numerici.
+
+2. **Suggerimento 2 (Modello e relazioni chiave):**
+   - Fornisce le leggi matematiche o fisiche e i teoremi da applicare (es. secondo principio della dinamica $F = m \\cdot a$, teorema di Pitagora, equazione dei gas ideali).
+   - Mostra come impostare le equazioni o il sistema di riferimento, collegando dati noti e grandezze incognite, senza però effettuare i calcoli algebrici finali.
+
+3. **Suggerimento 3 (Passaggio di sblocco operativo):**
+   - Fornisce l'indicazione tecnica o algebrica per superare il punto critico dell'esercizio (es. "Sostituisci la prima equazione nella seconda", "Isola la variabile $t$", "Raccogli $e^x$ a fattor comune", "Applica la conservazione della quantità di moto proiettata sull'asse $x$").
+
+All'interno di ogni capitolo/esercizio, il testo deve contenere ESCLUSIVAMENTE questi paragrafi:
+
+# Esercizio X
+### Testo del problema
+[Riporta qui la traccia originale dell'esercizio]
+
+### Guida alla risoluzione (Suggerimenti progressivi)
+> 💡 **Suggerimento 1 (Orientamento concettuale):** [Testo del suggerimento 1]
+>
+> 🔍 **Suggerimento 2 (Modello e relazioni chiave):** [Testo del suggerimento 2]
+>
+> 🎯 **Suggerimento 3 (Passaggio di sblocco operativo):** [Testo del suggerimento 3]
+
+<!-- PAGE_BREAK -->
+
+# Esercizio X — Soluzione del problema
+### Soluzione del problema
+[Esposizione della risoluzione didattica completa conforme al livello di dettaglio richiesto]"""
+    elif "Solo suggerimenti" in modalita_didattica or "Scheda di lavoro" in modalita_didattica:
+        struttura_output_istruzioni = """E. STRUTTURA OBBLIGATORIA DELL'OUTPUT (SCHEDA DI LAVORO PER STUDENTI - SOLO SUGGERIMENTI):
+Per questo esercizio genera la sequenza di 3 SUGGERIMENTI PROGRESSIVI e unicamente il RISULTATO NUMERICO/SIMBOLICO finale di verifica, SENZA svolgere i passaggi della soluzione estesa:
+
+# Esercizio X
+### Testo del problema
+[Riporta qui la traccia originale dell'esercizio]
+
+### Guida alla risoluzione (Suggerimenti progressivi)
+> 💡 **Suggerimento 1 (Orientamento concettuale):** [Principio qualitativo e strategia]
+>
+> 🔍 **Suggerimento 2 (Modello e relazioni chiave):** [Formule e modello da impostare]
+>
+> 🎯 **Suggerimento 3 (Passaggio di sblocco operativo):** [Passaggio tecnico per superare l'ostacolo]
+
+### Risultato finale di verifica
+[Riporta unicamente il valore o la formula finale numerica verificata, es. $x = 3$ oppure $v = 12.5 \\text{ m/s}$, per consentire l'autoverifica dello studente]"""
+    else:  # Solo soluzione / Standard
+        struttura_output_istruzioni = """E. STRUTTURA OBBLIGATORIA DELL'OUTPUT (SOLO SOLUZIONE DIRETTA):
+Devi imporre una struttura fissa e obbligatoria per ogni esercizio. Ogni esercizio deve essere trattato come un capitolo a sé stante. All'interno di ogni capitolo, il testo deve contenere ESCLUSIVAMENTE questi due paragrafi:
+
+# Esercizio X
+### Testo del problema
+[Riporta qui la traccia originale dell'esercizio]
+
+### Soluzione del problema
+[Esposizione della risoluzione conforme al livello di dettaglio richiesto]"""
+
     system_prompt = f"""Sei un docente e assistente didattico esperto nella risoluzione di problemi di matematica e fisica per la scuola italiana.
 Risolvi l'esercizio che ti viene fornito in modo didatticamente impeccabile e rigoroso, formattando tutto il testo matematico in LaTeX standard.
 
@@ -537,15 +678,7 @@ D. REGOLE DI FORMATTAZIONE MATEMATICA (ZERO TOLLERANZA):
 6. CARATTERI RISERVATI (CRITICO): È SEVERAMENTE VIETATO usare i simboli `_`, `^`, `\\cdot` o qualsiasi altro comando matematico al di fuori dei delimitatori `$ ... $`. Ad esempio, scrivere testualmente `(c_A = 4186)` genererà un ERRORE FATALE che distrugge il documento. DEVI usare SEMPRE i dollari: `($c_A = 4186$)` oppure $c_A$. Nessuna eccezione.
 7. NO PARENTESI GRAFFE VUOTE O PEDICI/APICI ORFANI: È assolutamente vietato generare apici o pedici non completati o con graffe vuote (es. non generare mai `^{{}}` o `_{{}}` o parentesi graffe aperte senza contenuto). Qualsiasi esponente o pedice deve avere sempre un valore esplicito tra le parentesi graffe (es. `^{{2}}`).
 
-E. STRUTTURA OBBLIGATORIA DELL'OUTPUT (ZERO TOLLERANZA):
-Devi imporre una struttura fissa e obbligatoria per ogni esercizio. Ogni esercizio deve essere trattato come un capitolo a sé stante. All'interno di ogni capitolo, il testo deve contenere ESCLUSIVAMENTE questi due paragrafi:
-
-# Esercizio X
-### Testo del problema
-[Riporta qui la traccia originale dell'esercizio]
-
-### Soluzione del problema
-[Esposizione della risoluzione conforme al livello di dettaglio richiesto]
+{struttura_output_istruzioni}
 
 F. SINTESI ESTREMA:
 Elimina qualsiasi preambolo generale, saluto o commento pedagogico (es. "Ecco la soluzione", "Spero sia chiaro"). La soluzione deve essere diretta, densa e concentrata unicamente sui contenuti matematici e fisici.
@@ -1020,6 +1153,21 @@ def generate_pandoc_output(markdown_content, output_format, reference_doc=None):
     # Sanitizza il markdown per correggere errori comuni dell'AI prima della compilazione
     markdown_content = sanitize_latex_for_pandoc(markdown_content)
     
+    # Gestione universale delle interruzioni di pagina:
+    # Per docx usiamo un blocco raw openxml che produce un salto pagina nativo in Word.
+    # Per pdf usiamo il comando LaTeX \newpage.
+    if output_format == "docx":
+        docx_page_break = "\n\n```{=openxml}\n<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>\n```\n\n"
+        markdown_content = markdown_content.replace("<!-- PAGE_BREAK -->", docx_page_break)
+    elif output_format == "pdf":
+        markdown_content = markdown_content.replace("<!-- PAGE_BREAK -->", "\n\n\\newpage\n\n")
+    
+    # Per l'output PDF, pdflatex non supporta caratteri Unicode a 4 byte (emoji come 💡, 🔍, 🎯)
+    # che provocano crash fatali di inputenc. Le filtriamo in modo sicuro mantenendo intatti simboli e LaTeX.
+    if output_format == "pdf":
+        markdown_content = re.sub(r'[\U00010000-\U0010ffff]', '', markdown_content)
+        markdown_content = re.sub(r'[\u2600-\u27BF]', '', markdown_content)
+    
     # Create the temp markdown file in the current directory to avoid cross-drive/temp folder path issues with LaTeX
     with tempfile.NamedTemporaryFile(dir=os.getcwd(), delete=False, suffix=".md", mode="w", encoding="utf-8") as temp_md:
         temp_md.write(markdown_content)
@@ -1097,6 +1245,52 @@ def generate_pandoc_output(markdown_content, output_format, reference_doc=None):
     return None
 
 
+def render_pipeline_indicator(current_step):
+    """Renderizza un indicatore visuale delle 3 fasi della pipeline."""
+    steps = [
+        ("1", "📁 Caricamento", "upload"),
+        ("2", "📝 Revisione Tracce", "review"),
+        ("3", "💾 Soluzioni & Export", "done")
+    ]
+    
+    html = "<div style='display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; border-radius: 10px; padding: 0.75rem 1.25rem; border: 1px solid #E2E8F0; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 8px;'>"
+    for idx, (num, label, key) in enumerate(steps):
+        is_active = (key == current_step)
+        is_completed = (current_step == "review" and key == "upload") or (current_step == "done" and key in ["upload", "review"])
+        
+        if is_active:
+            bg_badge = "#2A9D8F"
+            text_badge = "#FFFFFF"
+            text_label = "#1E293B"
+            font_weight = "700"
+            border_badge = "2px solid #2A9D8F"
+        elif is_completed:
+            bg_badge = "#E8F5E9"
+            text_badge = "#2E7D32"
+            text_label = "#475569"
+            font_weight = "600"
+            border_badge = "1px solid #A5D6A7"
+        else:
+            bg_badge = "#F1F5F9"
+            text_badge = "#94A3B8"
+            text_label = "#94A3B8"
+            font_weight = "500"
+            border_badge = "1px solid #E2E8F0"
+            
+        icon_text = "✓" if (is_completed and not is_active) else num
+        
+        html += f"""
+        <div style='display: flex; align-items: center; gap: 8px;'>
+            <span style='display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: {bg_badge}; color: {text_badge}; font-size: 0.75rem; font-weight: 700; border: {border_badge};'>{icon_text}</span>
+            <span style='color: {text_label}; font-weight: {font_weight}; font-size: 0.88rem;'>{label}</span>
+        </div>
+        """
+        if idx < len(steps) - 1:
+            html += "<span style='color: #CBD5E1; font-weight: bold;'>➔</span>"
+    html += "</div>"
+    st.markdown(html, unsafe_allow_html=True)
+
+
 def run_app():
     # Inizializzazione dello stato di sessione
     if "pipeline_step" not in st.session_state:
@@ -1109,8 +1303,19 @@ def run_app():
     # Caricamento automatico dell'API Key
     api_key = get_api_key()
     
-    # Intestazione UI
-    st.title("📐 Risolutore di Matematica e Fisica")
+    # Intestazione UI con spaziatura pulita e chiara
+    st.markdown(
+        """
+        <div style='margin-bottom: 1rem;'>
+            <h1 style='color: #2D3748; margin-bottom: 0.2rem;'>📐 Risolutore di Matematica e Fisica</h1>
+            <p style='color: #64748B; font-size: 1.02rem; margin-top: 0;'>Soluzioni passo-passo conformi ai programmi ministeriali con formule LaTeX, grafici e verifica numerica.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Indicatore visuale delle fasi della pipeline
+    render_pipeline_indicator(st.session_state.pipeline_step)
     
     # Barra laterale per i controlli interattivi
     with st.sidebar:
@@ -1118,14 +1323,26 @@ def run_app():
         
         # 1. Livello di dettaglio
         dettaglio = st.selectbox(
-            "Livello di dettaglio spiegazioni",
+            "📊 Livello di dettaglio spiegazioni",
             options=["Basso (solo calcoli)", "Medio (indicazioni essenziali)", "Alto (spiegazioni ampie)"],
             index=2
         )
         
-        # 2. Anno scolastico
+        # 2. Contenuti da includere (Soluzione / Suggerimenti)
+        modalita_didattica = st.selectbox(
+            "💡 Contenuti da includere",
+            options=[
+                "Sia soluzione che suggerimenti",
+                "Solo soluzione",
+                "Solo suggerimenti"
+            ],
+            index=0,
+            help="Seleziona cosa includere: la soluzione completa, solo la guida a suggerimenti progressivi per studenti, oppure entrambi su pagine separate (con interruzione di pagina)."
+        )
+        
+        # 3. Anno scolastico
         anno_scolastico = st.selectbox(
-            "Anno scolastico",
+            "🎓 Anno scolastico",
             options=[
                 "1° Anno (Prima)",
                 "2° Anno (Seconda)",
@@ -1137,17 +1354,17 @@ def run_app():
             index=4
         )
         
-        # 3. Formato di output
+        # 4. Formato di output
         output_format_sel = st.selectbox(
-            "Formato di output finale",
+            "📄 Formato di output finale",
             options=[".docx (Microsoft Word)", ".pdf (Documento PDF)"],
             index=0
         )
         output_format = "docx" if ".docx" in output_format_sel else "pdf"
         
-        # 4. Gestione multi-file
+        # 5. Gestione multi-file
         multi_file_sel = st.selectbox(
-            "Gestione caricamento multi-file",
+            "📚 Gestione caricamento multi-file",
             options=["Unico documento cumulativo", "File separati"],
             index=0
         )
@@ -1167,90 +1384,107 @@ def run_app():
                 "• **Fornitore AI:** L'elaborazione avviene tramite API Google Gemini; nessun dato viene registrato o utilizzato per addestrare modelli pubblici."
             )
         
-    # Area principale caricamento file
-    st.write("Trascina o carica uno o più compiti di matematica e fisica (PDF, DOCX, TXT, PNG, JPG). L'applicazione estrarrà il testo e le immagini, identificherà i singoli quesiti e li risolverà sequenzialmente.")
-    
-    # Dettaglio informativo sui limiti del sistema
-    st.info(
-        "ℹ️ **Limiti e Guardrails del Sistema per questa sessione:**\n"
-        "* 📁 **Numero file**: Massimo 5 file per volta.\n"
-        "* ⚖️ **Dimensione file**: Massimo 15 MB per singolo file, 50 MB totali per caricamento.\n"
-        "* 📄 **Limiti pagine**: Massimo 20 pagine per PDF.\n"
-        "* 🖼️ **Risoluzione immagini**: Massimo 20 Megapixel per singola pagina o immagine.\n"
-        "* ✏️ **Esercizi**: Massimo 10 problemi elaborabili per singola esecuzione."
-    )
-    
-    uploaded_files = st.file_uploader(
-        "Carica documenti o immagini degli esercizi",
-        type=["pdf", "docx", "txt", "png", "jpg", "jpeg"],
-        accept_multiple_files=True
-    )
-        
     # GESTIONE FASE 1: UPLOAD E ANALISI
     if st.session_state.pipeline_step == "upload":
-        if uploaded_files:
-            if not api_key:
-                st.error(
-                    "### ⚠️ Gemini API Key Mancante\n"
-                    "Non è stata rilevata alcuna chiave API per Gemini. Per risolvere i problemi:\n\n"
-                    "1. Imposta la variabile d'ambiente **`GEMINI_API_KEY`**.\n"
-                    "2. Oppure configura il segreto in **`st.secrets`** (es. `.streamlit/secrets.toml`).\n"
-                    "3. Ricarica la pagina del browser o riavvia l'applicazione."
-                )
-                st.stop()
+        col_upload, col_limits = st.columns([1.6, 1.0], gap="large")
+        
+        with col_upload:
+            st.markdown("### 📂 Carica i compiti")
+            st.write("Trascina o carica uno o più compiti di matematica e fisica (PDF, DOCX, TXT, PNG, JPG). L'applicazione estrarrà il testo e le immagini, identificherà i singoli quesiti e li risolverà sequenzialmente.")
+            
+            uploaded_files = st.file_uploader(
+                "Carica documenti o immagini degli esercizi",
+                type=["pdf", "docx", "txt", "png", "jpg", "jpeg"],
+                accept_multiple_files=True,
+                label_visibility="collapsed"
+            )
+            
+            if uploaded_files:
+                total_mb = sum(f.size for f in uploaded_files) / (1024 * 1024)
+                st.caption(f"📁 **{len(uploaded_files)} file selezionati** (Totale: {total_mb:.1f} MB)")
                 
-            if len(uploaded_files) > 5:
-                st.error("Puoi caricare un massimo di 5 file alla volta.")
-                st.stop()
-                
-            total_size = sum(f.size for f in uploaded_files)
-            if total_size > 50 * 1024 * 1024:
-                st.error("La dimensione totale dei file supera il limite di 50 MB.")
-                st.stop()
-                
-            if st.button("🔍 Analizza Documento ed Estrai Tracce", type="primary"):
-                temp_work_dir = tempfile.mkdtemp(prefix="correttore_work_")
-                img_dir = os.path.join(temp_work_dir, "images")
-                os.makedirs(img_dir, exist_ok=True)
-                
-                processed_files = []
-                all_extracted_images = []
-                
-                with st.spinner("Estrazione testi ed elementi visivi ad alta risoluzione in corso..."):
-                    for uploaded_file in uploaded_files:
-                        res = process_input_file(uploaded_file, temp_work_dir, img_dir)
-                        processed_files.append(res)
-                        all_extracted_images.extend(res["extracted_images"])
-                
-                combined_text = ""
-                combined_images_for_gemini = []
-                for pf in processed_files:
-                    if pf["text"]:
-                        combined_text += f"\n--- Contenuto da {pf['filename']} ---\n{pf['text']}\n"
-                    combined_images_for_gemini.extend(pf["images_for_gemini"])
-                    
-                with st.spinner("Identificazione e separazione dei singoli esercizi con visione multimodale..."):
-                    exercises = identify_exercises_with_gemini(
-                        api_key, combined_text, combined_images_for_gemini, all_extracted_images
+                if not api_key:
+                    st.error(
+                        "### ⚠️ Gemini API Key Mancante\n"
+                        "Non è stata rilevata alcuna chiave API per Gemini. Per risolvere:\n\n"
+                        "1. Imposta la variabile d'ambiente **`GEMINI_API_KEY`**.\n"
+                        "2. Oppure configura il segreto in **`st.secrets`**.\n"
+                        "3. Ricarica la pagina del browser."
                     )
-                    
-                if not exercises:
-                    st.error("Nessun esercizio identificato nel documento. Verifica la leggibilità del file.")
                     st.stop()
                     
-                if len(exercises) > 10:
-                    st.error("Sono stati identificati più di 10 esercizi. Limite superato.")
+                if len(uploaded_files) > 5:
+                    st.error("Puoi caricare un massimo di 5 file alla volta.")
                     st.stop()
                     
-                st.session_state.review_data = {
-                    "exercises": exercises,
-                    "img_dir": img_dir,
-                    "temp_work_dir": temp_work_dir,
-                    "processed_files": processed_files,
-                    "all_extracted_images": all_extracted_images
-                }
-                st.session_state.pipeline_step = "review"
-                st.rerun()
+                if sum(f.size for f in uploaded_files) > 50 * 1024 * 1024:
+                    st.error("La dimensione totale dei file supera il limite di 50 MB.")
+                    st.stop()
+                    
+                if st.button("🔍 Analizza Documento ed Estrai Tracce", type="primary", use_container_width=True):
+                    temp_work_dir = tempfile.mkdtemp(prefix="correttore_work_")
+                    img_dir = os.path.join(temp_work_dir, "images")
+                    os.makedirs(img_dir, exist_ok=True)
+                    
+                    processed_files = []
+                    all_extracted_images = []
+                    
+                    with st.spinner("Estrazione testi ed elementi visivi ad alta risoluzione in corso..."):
+                        for uploaded_file in uploaded_files:
+                            res = process_input_file(uploaded_file, temp_work_dir, img_dir)
+                            processed_files.append(res)
+                            all_extracted_images.extend(res["extracted_images"])
+                    
+                    combined_text = ""
+                    combined_images_for_gemini = []
+                    for pf in processed_files:
+                        if pf["text"]:
+                            combined_text += f"\n--- Contenuto da {pf['filename']} ---\n{pf['text']}\n"
+                        combined_images_for_gemini.extend(pf["images_for_gemini"])
+                        
+                    with st.spinner("Identificazione e separazione dei singoli esercizi con visione multimodale..."):
+                        exercises = identify_exercises_with_gemini(
+                            api_key, combined_text, combined_images_for_gemini, all_extracted_images
+                        )
+                        
+                    if not exercises:
+                        st.error("Nessun esercizio identificato nel documento. Verifica la leggibilità del file.")
+                        st.stop()
+                        
+                    if len(exercises) > 10:
+                        st.error("Sono stati identificati più di 10 esercizi. Limite superato.")
+                        st.stop()
+                        
+                    st.session_state.review_data = {
+                        "exercises": exercises,
+                        "img_dir": img_dir,
+                        "temp_work_dir": temp_work_dir,
+                        "processed_files": processed_files,
+                        "all_extracted_images": all_extracted_images
+                    }
+                    st.session_state.pipeline_step = "review"
+                    st.rerun()
+                    
+        with col_limits:
+            st.markdown(
+                """
+                <div style='background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);'>
+                    <h4 style='margin-top: 0; color: #1E293B; font-size: 0.98rem; margin-bottom: 0.75rem;'>📋 Specifiche e Limiti di Sessione</h4>
+                    <div style='display: flex; flex-direction: column; gap: 8px; font-size: 0.86rem; color: #475569;'>
+                        <div>📁 <b>Max 5 file</b> per caricamento</div>
+                        <div>⚖️ <b>Max 15 MB</b> per file (50 MB totali)</div>
+                        <div>📄 <b>Max 20 pagine</b> per documento PDF</div>
+                        <div>🖼️ <b>Max 20 Megapixel</b> per singola immagine</div>
+                        <div>✏️ <b>Max 10 problemi</b> per esecuzione</div>
+                    </div>
+                    <hr style='margin: 0.8rem 0; border: none; border-top: 1px solid #F1F5F9;' />
+                    <div style='font-size: 0.8rem; color: #64748B; line-height: 1.4;'>
+                        💡 <b>OCR & Visione:</b> Anche compiti manoscritti o figure geometriche vengono riconosciuti e associati ai relativi quesiti.
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
     # GESTIONE FASE 2: REVISIONE TRACCE (HUMAN-IN-THE-LOOP)
     elif st.session_state.pipeline_step == "review":
@@ -1260,37 +1494,52 @@ def run_app():
         
         st.success(f"✅ Rilevati con successo **{len(exercises)} problemi distinti**.")
         st.info("📝 **Revisione Tracce:** Verifica e correggi se necessario il testo o le formule matematiche estratte prima di avviare la risoluzione.")
+        if modalita_didattica == "Sia soluzione che suggerimenti":
+            st.info("💡 **Modalità Completa Attiva:** Per ciascun esercizio verranno generati testo e suggerimenti crescenti sulla prima pagina, e la soluzione estesa su una pagina separata.")
+        elif modalita_didattica == "Solo suggerimenti":
+            st.info("📋 **Modalità Solo Suggerimenti Attiva:** Verranno generati 3 suggerimenti crescenti e il solo risultato finale di verifica per l'autonomia dello studente.")
+        else:
+            st.info("📝 **Modalità Solo Soluzione Attiva:** Verrà generata direttamente la risoluzione passo-passo del problema.")
         
         for idx, ex in enumerate(exercises):
             ex_id = ex.get("id", idx + 1)
             with st.expander(f"📌 **Esercizio {ex_id}**", expanded=True):
                 # Mostra immagini associate se presenti
-                for img_name in ex.get("immagini_correlate", []):
-                    img_path = os.path.join(img_dir, img_name)
-                    if os.path.exists(img_path):
-                        st.image(img_path, caption=f"Figura associata: {img_name}", width=450)
+                if ex.get("immagini_correlate"):
+                    st.markdown("##### 🖼️ Figure associate:")
+                    cols_img = st.columns(min(len(ex["immagini_correlate"]), 2))
+                    for c_idx, img_name in enumerate(ex["immagini_correlate"]):
+                        img_path = os.path.join(img_dir, img_name)
+                        if os.path.exists(img_path):
+                            with cols_img[c_idx % len(cols_img)]:
+                                st.image(img_path, caption=f"Figura: {img_name}", use_container_width=True)
                 
-                # Area testo modificabile
-                current_text = st.text_area(
-                    f"Testo / Formule (LaTeX) - Esercizio {ex_id}:",
-                    value=ex.get("testo", ""),
-                    key=f"edit_ex_{ex_id}",
-                    height=130
-                )
+                # Schede per modifica testo ed anteprima live
+                tab_edit, tab_preview = st.tabs(["✏️ Modifica Testo & Formule LaTeX", "👁️ Anteprima Matematica Live"])
                 
-                st.markdown("**Anteprima Matematica Live:**")
-                st.markdown(current_text)
+                with tab_edit:
+                    current_text = st.text_area(
+                        f"Testo / Formule (LaTeX) - Esercizio {ex_id}:",
+                        value=ex.get("testo", ""),
+                        key=f"edit_ex_{ex_id}",
+                        height=120,
+                        label_visibility="collapsed"
+                    )
+                with tab_preview:
+                    preview_val = st.session_state.get(f"edit_ex_{ex_id}", ex.get("testo", ""))
+                    st.markdown(preview_val if preview_val else "*Nessun testo presente.*")
                 
-        col_submit, col_cancel = st.columns([2, 1])
+        st.write("")
+        col_submit, col_cancel = st.columns([1.6, 1.0], gap="medium")
         with col_submit:
-            if st.button("🚀 Conferma Tracce e Genera Soluzioni", type="primary"):
+            if st.button("🚀 Conferma Tracce e Genera Soluzioni", type="primary", use_container_width=True):
                 # Aggiorna il testo degli esercizi con le modifiche inserite dall'utente
                 for idx, ex in enumerate(exercises):
                     ex_id = ex.get("id", idx + 1)
                     if f"edit_ex_{ex_id}" in st.session_state:
                         ex["testo"] = st.session_state[f"edit_ex_{ex_id}"]
                         
-                sys_prompt = build_system_prompt(dettaglio, anno_scolastico)
+                sys_prompt = build_system_prompt(dettaglio, anno_scolastico, modalita_didattica)
                 
                 # Risoluzione sequenziale (Modulo 2)
                 solved_list = []
@@ -1322,13 +1571,18 @@ def run_app():
                 
                 markdown_out = "# Soluzione Esercizi di Matematica e Fisica\n\n"
                 markdown_out += f"**Profilo Studente:** {anno_scolastico}\n"
-                markdown_out += f"**Livello di dettaglio:** {dettaglio}\n\n"
-                markdown_out += "---\n\n"
+                markdown_out += f"**Livello di dettaglio:** {dettaglio}\n"
+                markdown_out += f"**Contenuti inclusi:** {modalita_didattica}\n"
+                markdown_out += "\n---\n\n"
                 
-                for ex in solved_list:
+                for idx_ex, ex in enumerate(solved_list):
                     soluzione_text = ex['soluzione']
                     
-                    # Inserimento immagini prima della soluzione
+                    # Interruzione di pagina tra esercizi consecutivi
+                    if idx_ex > 0:
+                        markdown_out += "\n\n<!-- PAGE_BREAK -->\n\n"
+                        
+                    # Inserimento immagini associate alla traccia (rimangono sulla prima pagina con il testo)
                     immagini_md = ""
                     for img_name in ex["immagini"]:
                         img_path = os.path.join(img_dir, img_name)
@@ -1337,13 +1591,24 @@ def run_app():
                             immagini_md += f"![Immagine correlata]({img_abs_path})\n\n"
                             
                     if immagini_md:
-                        if "### Soluzione del problema" in soluzione_text:
+                        if "### Guida alla risoluzione" in soluzione_text:
+                            soluzione_text = soluzione_text.replace("### Guida alla risoluzione", immagini_md + "### Guida alla risoluzione")
+                        elif "### Soluzione del problema" in soluzione_text:
                             soluzione_text = soluzione_text.replace("### Soluzione del problema", immagini_md + "### Soluzione del problema")
                         else:
-                            soluzione_text += "\n\n" + immagini_md
+                            soluzione_text = immagini_md + soluzione_text
                             
+                    # Se l'utente ha scelto "Sia soluzione che suggerimenti", garantiamo la separazione su 2 pagine distinte
+                    if modalita_didattica == "Sia soluzione che suggerimenti":
+                        if "<!-- PAGE_BREAK -->" not in soluzione_text:
+                            if "# Esercizio" in soluzione_text and "— Soluzione" in soluzione_text:
+                                soluzione_text = re.sub(r'(#+ Esercizio\s+\d+\s+—\s+Soluzione)', r'<!-- PAGE_BREAK -->\n\n\1', soluzione_text, count=1)
+                            elif "### Soluzione del problema" in soluzione_text:
+                                soluzione_text = soluzione_text.replace("### Soluzione del problema", f"<!-- PAGE_BREAK -->\n\n# Esercizio {ex['id']} — Soluzione del problema\n\n### Soluzione del problema")
+                            else:
+                                soluzione_text += "\n\n<!-- PAGE_BREAK -->\n\n"
+                                
                     markdown_out += f"{soluzione_text}\n\n"
-                    markdown_out += "---\n\n"
                     
                 if output_format == "pdf":
                     yaml_header = """---
@@ -1359,13 +1624,15 @@ geometry: margin=2cm
                 st.session_state.completed_data = {
                     "file_data": file_data,
                     "output_format": output_format,
-                    "file_name": f"Soluzioni_Verifica.{output_format}"
+                    "file_name": f"Soluzioni_Verifica.{output_format}",
+                    "solved_list": solved_list,
+                    "modalita_didattica": modalita_didattica
                 }
                 st.session_state.pipeline_step = "done"
                 st.rerun()
                 
         with col_cancel:
-            if st.button("🔄 Annulla e Carica Nuovi File"):
+            if st.button("🔄 Annulla e Carica Nuovi File", use_container_width=True):
                 if rev_data.get("temp_work_dir") and os.path.exists(rev_data["temp_work_dir"]):
                     shutil.rmtree(rev_data["temp_work_dir"], ignore_errors=True)
                 st.session_state.pipeline_step = "upload"
@@ -1377,25 +1644,46 @@ geometry: margin=2cm
     elif st.session_state.pipeline_step == "done":
         comp_data = st.session_state.completed_data
         st.balloons()
-        st.success("✅ **Il tuo documento con le soluzioni è pronto per il download!**")
         
-        if comp_data and comp_data.get("file_data"):
-            st.download_button(
-                label=f"💾 Scarica {comp_data['file_name']}",
-                data=comp_data["file_data"],
-                file_name=comp_data["file_name"],
-                mime="application/octet-stream",
-                type="primary"
-            )
-            
-        st.write("---")
-        if st.button("🔄 Elabora un altro compito"):
-            if st.session_state.review_data and st.session_state.review_data.get("temp_work_dir"):
-                shutil.rmtree(st.session_state.review_data["temp_work_dir"], ignore_errors=True)
-            st.session_state.pipeline_step = "upload"
-            st.session_state.review_data = None
-            st.session_state.completed_data = None
-            st.rerun()
+        modalita_info = f" (Contenuti: <b>{comp_data.get('modalita_didattica')}</b>)" if comp_data and comp_data.get("modalita_didattica") else ""
+        st.markdown(
+            f"""
+            <div style='background-color: #FFFFFF; border: 1px solid #C8E6C9; border-left: 5px solid #2E7D32; border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);'>
+                <h3 style='margin-top: 0; color: #2E7D32; font-size: 1.25rem;'>🎉 Risoluzione Completata con Successo!</h3>
+                <p style='color: #475569; margin-bottom: 0.2rem; font-size: 0.95rem;'>Il documento è stato redatto{modalita_info}, con formule matematiche conformi ed esportato in formato <b>.{comp_data.get('output_format', 'docx')}</b>.</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        col_dl, col_restart = st.columns([1.6, 1.0], gap="medium")
+        with col_dl:
+            if comp_data and comp_data.get("file_data"):
+                st.download_button(
+                    label=f"💾 Scarica {comp_data['file_name']}",
+                    data=comp_data["file_data"],
+                    file_name=comp_data["file_name"],
+                    mime="application/octet-stream",
+                    type="primary",
+                    use_container_width=True
+                )
+        with col_restart:
+            if st.button("🔄 Elabora un altro compito", use_container_width=True):
+                if st.session_state.review_data and st.session_state.review_data.get("temp_work_dir"):
+                    shutil.rmtree(st.session_state.review_data["temp_work_dir"], ignore_errors=True)
+                st.session_state.pipeline_step = "upload"
+                st.session_state.review_data = None
+                st.session_state.completed_data = None
+                st.rerun()
+                
+        # Anteprima interattiva delle soluzioni e suggerimenti generati
+        if comp_data and comp_data.get("solved_list"):
+            st.write("---")
+            st.markdown("### 👁️ Anteprima Soluzioni & Suggerimenti Generati")
+            for ex in comp_data["solved_list"]:
+                ex_id = ex.get("id", 1)
+                with st.expander(f"📌 Soluzione & Guida Esercizio {ex_id}", expanded=False):
+                    st.markdown(ex["soluzione"])
 
 if __name__ == "__main__":
     run_app()

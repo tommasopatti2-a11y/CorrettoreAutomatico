@@ -48,12 +48,15 @@ Valutazione dello stato attuale:
 8. **Zero trust interno:** upload, testo estratto, output AI, Markdown, path e documenti generati sono non attendibili fino a validazione.
 9. **Privacy by default:** retention nulla oltre il job/download e documenti del pilot privi di dati personali.
 10. **Qualità verificabile:** nessuna funzione è “completa” senza test; DOCX/PDF richiedono render e ispezione.
+11. **Configurazione Contenuti Output e Separazione Pagine:** introdotto il selettore nella sidebar sinistra ("💡 Contenuti da includere") con 3 opzioni conformi: *Sia soluzione che suggerimenti* (default), *Solo soluzione*, *Solo suggerimenti*. Per la modalità combinata (*Sia soluzione che suggerimenti*), il sistema garantisce l'inserimento dell'interruzione di pagina (`\newpage` per PDF e blocco OpenXML nativo per DOCX) per separare testo dell'esercizio + figure + 3 indizi/suggerimenti dalla soluzione finale, impaginandoli su due pagine distinte. Verificata anche l'interruzione di pagina tra esercizi consecutivi.
+12. **UI & Spaziatura Barra Laterale (Desktop & Mobile):** ridotte le dimensioni del pulsante di compressione/espansione della barra laterale a un formato compatto (28px × 28px) con icona proporzionata (14px). Spostati marcatamente a destra tutti i titoli, label, selettori ed espansori della sidebar (`padding-left: 2.8rem` nel contenitore, `padding-left: 1.2rem` su testi e controlli) per azzerare qualsiasi rischio di sovrapposizione visiva con il pulsante toggle.
+13. **Continuous Deployment (CD) su VPS Aruba:** configurato workflow GitHub Actions (`.github/workflows/deploy.yml`) per eseguire in modo sicuro ed automatico il deploy via SSH su ogni `git push` su `main` (aggiornamento repository `/root/CorrettoreAutomatico` e riavvio del servizio systemd `correttore.service`).
 
 ## 3. Inventario corrente
 
 ### File applicativi
 
-- `app.py` — variante Streamlit con irrobustimento sicurezza, limiti e sanitizzazione LaTeX avanzata.
+- `app.py` — variante Streamlit con irrobustimento sicurezza, limiti, sanitizzazione LaTeX avanzata e modalità Scaffolding didattico.
 - `index.html` — variante browser monolitica. Legacy in quarantena.
 - `template.docx` — reference document Pandoc.
 - `.streamlit/config.toml` — tema pastello e limite upload configurato a 15MB.
@@ -62,8 +65,10 @@ Valutazione dello stato attuale:
 
 ### File di supporto
 
+- `ARCHITECTURE.md` — documento architetturale e funzionale normativo con data journey, mappa servizi e protocolli.
 - `test_models.py` — script manuale per elencare modelli.
 - `scratch/test_latex_compilation.py` — test suite per la validazione automatica di 10 scenari ostili di compilazione pdflatex.
+- `scratch/test_scaffolding_compilation.py` — test suite per la validazione della modalità Scaffolding e compilazione DOCX/PDF.
 - `GEMINI.md` — specifica normativa.
 - `MEMORY.md` — questo stato operativo.
 

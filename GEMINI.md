@@ -287,7 +287,7 @@ Una modifica è conclusa solo se:
 2. i test pertinenti passano;
 3. non introduce segreti o dati personali;
 4. rispetta isolamento e limiti;
-5. aggiorna documentazione e `MEMORY.md` se cambia stato o decisioni;
+5. aggiorna `ARCHITECTURE.md` (qualora la modifica impatti il flusso dati, i servizi usati, i contratti o i moduli) e `MEMORY.md` se cambia stato o decisioni;
 6. è stata verificata sull'interfaccia quando modifica la UX;
 7. gli artefatti DOCX/PDF sono renderizzati e ispezionati quando cambia l'output;
 8. il diff è limitato allo scopo e non cancella modifiche dell'utente;
@@ -297,7 +297,7 @@ Una modifica è conclusa solo se:
 
 All'inizio di ogni sessione:
 
-1. leggere integralmente `GEMINI.md` e `MEMORY.md`;
+1. leggere integralmente `GEMINI.md`, `ARCHITECTURE.md` e `MEMORY.md`;
 2. controllare `git status` e preservare modifiche esistenti;
 3. verificare il gate attivo in `MEMORY.md`;
 4. non saltare a feature successive se restano blocker P0;
@@ -309,11 +309,13 @@ Durante il lavoro:
 - non eseguire chiamate reali o deploy finché la rotazione della chiave non è confermata;
 - non installare o aggiornare dipendenze senza verificare compatibilità e advisory correnti;
 - non riscrivere la cronologia Git, eliminare file o ruotare credenziali senza autorizzazione esplicita;
+- mantenere costantemente sincronizzato `ARCHITECTURE.md` in caso di variazioni strutturali;
 - aggiornare `MEMORY.md` con fatti verificati, non intenzioni generiche.
 
 Prima del handoff:
 
 - eseguire i controlli proporzionati al rischio;
+- verificare che `ARCHITECTURE.md` rifletta fedelmente l'architettura corrente del sistema;
 - riportare file modificati, test eseguiti e rischi residui;
 - indicare il prossimo passo più sicuro coerente con il gate attivo.
 
