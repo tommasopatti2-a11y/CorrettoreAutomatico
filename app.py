@@ -1444,16 +1444,22 @@ def run_app():
         )
         
         # 2. Contenuti e finalità del documento
-        modalita_didattica = st.selectbox(
-            "💡 Tipologia e contenuti del documento",
+        modalita_didattica = st.radio(
+            "💡 Finalità didattica del documento",
             options=[
-                "Documento con Teoria e Spiegazioni",
-                "Documento di Apprendimento (Suggerimenti + Soluzione)",
-                "Documento di Apprendimento (Solo suggerimenti)",
-                "Solo soluzione diretta"
+                "📘 Teoria e spiegazioni",
+                "🧗 Apprendimento guidato (Scaffolding)",
+                "📋 Scheda per studenti (Solo suggerimenti)",
+                "📝 Solo soluzione diretta"
+            ],
+            captions=[
+                "Richiami teorici, formule notevoli e svolgimento approfondito",
+                "3 suggerimenti progressivi + soluzione su pagina separata",
+                "3 suggerimenti progressivi e solo risultato finale di verifica",
+                "Svolgimento immediato passo-passo per correzioni rapide"
             ],
             index=0,
-            help="Seleziona la finalità dell'elaborato: compendio con richiami di teoria e spiegazioni approfondite, scheda di apprendimento a indizi progressivi per studenti, o svolgimento diretto."
+            help="Scegli la modalità pedagogica dell'elaborato da generare."
         )
         
         # 3. Anno scolastico
@@ -1637,9 +1643,9 @@ def run_app():
         st.info("📝 **Revisione Tracce:** Verifica e correggi se necessario il testo o le formule matematiche estratte prima di avviare la risoluzione.")
         if "Teoria" in modalita_didattica:
             st.info("📘 **Modalità Teoria e Spiegazioni Attiva:** Per ciascun esercizio verranno generati l'inquadramento teorico formale con concetti chiave e teoremi, la risoluzione commentata e l'interpretazione critica finale.")
-        elif "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica:
+        elif "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica or "Apprendimento" in modalita_didattica or "Scaffolding" in modalita_didattica:
             st.info("💡 **Modalità Apprendimento Attiva (Suggerimenti + Soluzione):** Per ciascun esercizio verranno generati testo e suggerimenti crescenti sulla prima pagina, e la soluzione estesa su una pagina separata.")
-        elif "Solo suggerimenti" in modalita_didattica:
+        elif "Solo suggerimenti" in modalita_didattica or "Scheda" in modalita_didattica:
             st.info("📋 **Modalità Scheda di Lavoro Attiva (Solo suggerimenti):** Verranno generati 3 suggerimenti crescenti e il solo risultato finale di verifica per l'autonomia dello studente.")
         else:
             st.info("📝 **Modalità Solo Soluzione Attiva:** Verrà generata direttamente la risoluzione passo-passo del problema.")
@@ -1746,7 +1752,7 @@ def run_app():
                             soluzione_text = immagini_md + soluzione_text
                             
                     # Se l'utente ha scelto la modalità apprendimento con suggerimenti e soluzione, garantiamo la separazione su 2 pagine distinte
-                    if "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica:
+                    if "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica or "Apprendimento" in modalita_didattica or "Scaffolding" in modalita_didattica:
                         if "<!-- PAGE_BREAK -->" not in soluzione_text:
                             if "# Esercizio" in soluzione_text and "— Soluzione" in soluzione_text:
                                 soluzione_text = re.sub(r'(#+ Esercizio\s+\d+\s+—\s+Soluzione)', r'<!-- PAGE_BREAK -->\n\n\1', soluzione_text, count=1)
