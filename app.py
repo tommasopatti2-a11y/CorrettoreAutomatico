@@ -1485,37 +1485,6 @@ def run_app():
             index=0
         )
         
-        st.write("---")
-        with st.expander("🔑 Configurazione API Key Gemini", expanded=(not api_key)):
-            if api_key:
-                st.caption(f"🟢 **API Key attiva:** `{api_key[:6]}...{api_key[-4:]}`")
-            else:
-                st.caption("🔴 **Nessuna API Key rilevata**")
-            
-            sidebar_key = st.text_input("Inserisci/Aggiorna API Key:", type="password", key="sidebar_api_key_input", placeholder="AIzaSy...")
-            if st.button("💾 Salva Chiave", key="save_sidebar_key", use_container_width=True):
-                if sidebar_key and sidebar_key.strip():
-                    st.session_state["custom_gemini_api_key"] = sidebar_key.strip()
-                    try:
-                        script_dir = os.path.dirname(os.path.abspath(__file__))
-                        # Salva in .env
-                        with open(os.path.join(script_dir, ".env"), "w", encoding="utf-8") as f:
-                            f.write(f'GEMINI_API_KEY="{sidebar_key.strip()}"\n')
-                        # Salva in .streamlit/secrets.toml
-                        sec_dir = os.path.join(script_dir, ".streamlit")
-                        os.makedirs(sec_dir, exist_ok=True)
-                        with open(os.path.join(sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
-                            f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{sidebar_key.strip()}"\n')
-                        # Salva in ~/.streamlit/secrets.toml
-                        user_sec_dir = os.path.expanduser("~/.streamlit")
-                        os.makedirs(user_sec_dir, exist_ok=True)
-                        with open(os.path.join(user_sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
-                            f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{sidebar_key.strip()}"\n')
-                    except Exception:
-                        pass
-                    st.success("Chiave salvata!")
-                    st.rerun()
-
         st.markdown(
             "<div style='display: flex; align-items: center; gap: 8px; color: #2D3748; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem;'>"
             "<span>🎓</span><span>Realizzato dal Prof. Tommaso Patti</span>"
