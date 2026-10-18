@@ -16,25 +16,42 @@ from docx import Document
 import pypandoc
 
 def get_api_key():
-    """Tenta di caricare l'API key di Gemini da session_state, variabili d'ambiente, st.secrets, secrets.toml locale o api_key.txt."""
+    """Tenta di caricare l'API key di Gemini da session_state, variabili d'ambiente, file .env, st.secrets, secrets.toml locale o api_key.txt."""
     # 0. Prova da session_state (se inserita a runtime dall'utente)
     if "custom_gemini_api_key" in st.session_state and st.session_state["custom_gemini_api_key"]:
         return st.session_state["custom_gemini_api_key"].strip()
 
-    # 1. Prova da variabile d'ambiente
+    # 1. Prova da variabile d'ambiente di sistema
     api_key = os.environ.get("GEMINI_API_KEY")
     if api_key and api_key.strip():
         return api_key.strip()
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # 2. Prova da file .env (nella cartella dello script o nella directory di lavoro)
+    for env_path in [os.path.join(script_dir, ".env"), os.path.join(os.getcwd(), ".env")]:
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "GEMINI_API_KEY" in line:
+                            parts = line.split("=", 1)
+                            if len(parts) == 2 and parts[0].strip() == "GEMINI_API_KEY":
+                                val = parts[1].strip().strip('"').strip("'")
+                                if val:
+                                    return val
+            except Exception:
+                pass
         
-    # 2. Prova da st.secrets (globale o locale standard)
+    # 3. Prova da st.secrets (globale o locale standard)
     try:
         if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
             return str(st.secrets["GEMINI_API_KEY"]).strip()
     except Exception:
         pass
 
-    # 3. Prova direttamente dal file .streamlit/secrets.toml relativo alla cartella dello script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # 4. Prova direttamente dal file .streamlit/secrets.toml relativo alla cartella dello script
     local_secrets = os.path.join(script_dir, ".streamlit", "secrets.toml")
     if os.path.exists(local_secrets):
         try:
@@ -46,7 +63,7 @@ def get_api_key():
         except Exception:
             pass
 
-    # 4. Prova da api_key.txt nella cartella dello script
+    # 5. Prova da api_key.txt nella cartella dello script
     local_txt = os.path.join(script_dir, "api_key.txt")
     if os.path.exists(local_txt):
         try:
@@ -1481,10 +1498,15 @@ def run_app():
                     st.session_state["custom_gemini_api_key"] = sidebar_key.strip()
                     try:
                         script_dir = os.path.dirname(os.path.abspath(__file__))
+                        # Salva in .env
+                        with open(os.path.join(script_dir, ".env"), "w", encoding="utf-8") as f:
+                            f.write(f'GEMINI_API_KEY="{sidebar_key.strip()}"\n')
+                        # Salva in .streamlit/secrets.toml
                         sec_dir = os.path.join(script_dir, ".streamlit")
                         os.makedirs(sec_dir, exist_ok=True)
                         with open(os.path.join(sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
                             f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{sidebar_key.strip()}"\n')
+                        # Salva in ~/.streamlit/secrets.toml
                         user_sec_dir = os.path.expanduser("~/.streamlit")
                         os.makedirs(user_sec_dir, exist_ok=True)
                         with open(os.path.join(user_sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
@@ -1542,10 +1564,15 @@ def run_app():
                                 st.session_state["custom_gemini_api_key"] = user_k.strip()
                                 try:
                                     script_dir = os.path.dirname(os.path.abspath(__file__))
+                                    # Salva in .env
+                                    with open(os.path.join(script_dir, ".env"), "w", encoding="utf-8") as f:
+                                        f.write(f'GEMINI_API_KEY="{user_k.strip()}"\n')
+                                    # Salva in .streamlit/secrets.toml
                                     sec_dir = os.path.join(script_dir, ".streamlit")
                                     os.makedirs(sec_dir, exist_ok=True)
                                     with open(os.path.join(sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
                                         f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{user_k.strip()}"\n')
+                                    # Salva in ~/.streamlit/secrets.toml
                                     user_sec_dir = os.path.expanduser("~/.streamlit")
                                     os.makedirs(user_sec_dir, exist_ok=True)
                                     with open(os.path.join(user_sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
