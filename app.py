@@ -1361,17 +1361,16 @@ def generate_pandoc_output(markdown_content, output_format, reference_doc=None):
 
 
 def render_pipeline_indicator(current_step):
-    """Renderizza un indicatore visuale delle 3 fasi della pipeline."""
+    """Renderizza un indicatore visuale delle 2 fasi della pipeline."""
     steps = [
-        ("1", "📁 Caricamento", "upload"),
-        ("2", "📝 Revisione Tracce", "review"),
-        ("3", "💾 Soluzioni & Export", "done")
+        ("1", "📁 Caricamento & Analisi", "upload"),
+        ("2", "💾 Soluzioni & Export", "done")
     ]
     
     html = "<div style='display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; border-radius: 10px; padding: 0.75rem 1.25rem; border: 1px solid #E2E8F0; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 8px;'>"
     for idx, (num, label, key) in enumerate(steps):
         is_active = (key == current_step)
-        is_completed = (current_step == "review" and key == "upload") or (current_step == "done" and key in ["upload", "review"])
+        is_completed = (current_step == "done" and key == "upload")
         
         if is_active:
             bg_badge = "#2A9D8F"
@@ -1410,8 +1409,6 @@ def run_app():
     # Inizializzazione dello stato di sessione
     if "pipeline_step" not in st.session_state:
         st.session_state.pipeline_step = "upload"
-    if "review_data" not in st.session_state:
-        st.session_state.review_data = None
     if "completed_data" not in st.session_state:
         st.session_state.completed_data = None
 
@@ -1568,7 +1565,7 @@ def run_app():
                     st.error("La dimensione totale dei file supera il limite di 50 MB.")
                     st.stop()
                     
-                if st.button("🔍 Analizza Documento ed Estrai Tracce", type="primary", use_container_width=True):
+                if st.button("🚀 Risolvi ed Esporta Documento", type="primary", use_container_width=True):
                     temp_work_dir = tempfile.mkdtemp(prefix="correttore_work_")
                     img_dir = os.path.join(temp_work_dir, "images")
                     os.makedirs(img_dir, exist_ok=True)
@@ -1589,7 +1586,7 @@ def run_app():
                             combined_text += f"\n--- Contenuto da {pf['filename']} ---\n{pf['text']}\n"
                         combined_images_for_gemini.extend(pf["images_for_gemini"])
                         
-                    with st.spinner("Identificazione e separazione dei singoli esercizi con visione multimodale..."):
+                    with st.spinner("Identificazione e separazione dei singoli quesiti con visione multimodale..."):
                         exercises = identify_exercises_with_gemini(
                             api_key, combined_text, combined_images_for_gemini, all_extracted_images
                         )
@@ -1598,18 +1595,101 @@ def run_app():
                         st.error("Nessun esercizio identificato nel documento. Verifica la leggibilità del file.")
                         st.stop()
                         
-                    if len(exercises) > 10:
-                        st.error("Sono stati identificati più di 10 esercizi. Limite superato.")
-                        st.stop()
+                    sys_prompt = build_system_prompt(dettaglio, anno_scolastico, modalita_didattica)
+                    
+                    # Risoluzione sequenziale diretta (Modulo 2)
+                    solved_list = []
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    for idx, ex in enumerate(exercises):
+                        if idx > 0:
+                            time.sleep(6.0) # Rate limit delay per rispettare la quota free tier Gemini
+                        ex_id = ex.get("id", idx + 1)
+                        ex_text = ex.get("testo", "")
+                        ex_imgs = ex.get("immagini_correlate", [])
                         
-                    st.session_state.review_data = {
-                        "exercises": exercises,
-                        "img_dir": img_dir,
-                        "temp_work_dir": temp_work_dir,
-                        "processed_files": processed_files,
-                        "all_extracted_images": all_extracted_images
+                        status_text.write(f"✍️ **Risoluzione Esercizio {ex_id} in corso...** ({idx+1}/{len(exercises)})")
+                        soluzione = solve_exercise_with_gemini(api_key, sys_prompt, ex_text, ex_imgs, ex_id, img_dir)
+                        
+                        solved_list.append({
+                            "id": ex_id,
+                            "testo": ex_text,
+                            "immagini": ex_imgs,
+                            "soluzione": soluzione
+                        })
+                        progress_bar.progress((idx + 1) / len(exercises))
+                        
+                    status_text.success("🎉 Risoluzione completata! Generazione del file finale...")
+                    
+                    # Compilazione ed esportazione dell'output (Modulo 4)
+                    template_docx_path = "template.docx" if os.path.exists("template.docx") else None
+                    
+                    markdown_out = "# Soluzione Esercizi di Matematica e Fisica\n\n"
+                    markdown_out += f"**Profilo Studente:** {anno_scolastico}\n"
+                    markdown_out += f"**Livello di dettaglio:** {dettaglio}\n"
+                    markdown_out += f"**Contenuti inclusi:** {modalita_didattica}\n"
+                    markdown_out += "\n---\n\n"
+                    
+                    for idx_ex, ex in enumerate(solved_list):
+                        soluzione_text = ex['soluzione']
+                        
+                        # Interruzione di pagina tra esercizi consecutivi
+                        if idx_ex > 0:
+                            markdown_out += "\n\n<!-- PAGE_BREAK -->\n\n"
+                            
+                        # Inserimento immagini associate alla traccia (rimangono sulla prima pagina con il testo)
+                        immagini_md = ""
+                        for img_name in ex["immagini"]:
+                            img_path = os.path.join(img_dir, img_name)
+                            if os.path.exists(img_path):
+                                img_abs_path = os.path.abspath(img_path).replace("\\", "/")
+                                immagini_md += f"![Immagine correlata]({img_abs_path})\n\n"
+                                
+                        if immagini_md:
+                            if "### Inquadramento Teorico" in soluzione_text:
+                                soluzione_text = soluzione_text.replace("### Inquadramento Teorico", immagini_md + "### Inquadramento Teorico")
+                            elif "### Guida alla risoluzione" in soluzione_text:
+                                soluzione_text = soluzione_text.replace("### Guida alla risoluzione", immagini_md + "### Guida alla risoluzione")
+                            elif "### Soluzione e Commento" in soluzione_text:
+                                soluzione_text = soluzione_text.replace("### Soluzione e Commento", immagini_md + "### Soluzione e Commento")
+                            elif "### Soluzione del problema" in soluzione_text:
+                                soluzione_text = soluzione_text.replace("### Soluzione del problema", immagini_md + "### Soluzione del problema")
+                            else:
+                                soluzione_text = immagini_md + soluzione_text
+                                
+                        # Se l'utente ha scelto la modalità apprendimento con suggerimenti e soluzione, garantiamo la separazione su 2 pagine distinte
+                        if "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica or "Apprendimento" in modalita_didattica or "Scaffolding" in modalita_didattica:
+                            if "<!-- PAGE_BREAK -->" not in soluzione_text:
+                                if "# Esercizio" in soluzione_text and "— Soluzione" in soluzione_text:
+                                    soluzione_text = re.sub(r'(#+ Esercizio\s+\d+\s+—\s+Soluzione)', r'<!-- PAGE_BREAK -->\n\n\1', soluzione_text, count=1)
+                                elif "### Soluzione del problema" in soluzione_text:
+                                    soluzione_text = soluzione_text.replace("### Soluzione del problema", f"<!-- PAGE_BREAK -->\n\n# Esercizio {ex['id']} — Soluzione del problema\n\n### Soluzione del problema")
+                                else:
+                                    soluzione_text += "\n\n<!-- PAGE_BREAK -->\n\n"
+                                    
+                        markdown_out += f"{soluzione_text}\n\n"
+                        
+                    if output_format == "pdf":
+                        yaml_header = """---
+geometry: margin=2cm
+---
+
+"""
+                        markdown_out = yaml_header + markdown_out
+                        
+                    with st.spinner(f"Compilazione del documento .{output_format} con Pandoc in corso..."):
+                        file_data = generate_pandoc_output(markdown_out, output_format, template_docx_path)
+                        
+                    st.session_state.completed_data = {
+                        "file_data": file_data,
+                        "output_format": output_format,
+                        "file_name": f"Soluzioni_Verifica.{output_format}",
+                        "solved_list": solved_list,
+                        "modalita_didattica": modalita_didattica,
+                        "temp_work_dir": temp_work_dir
                     }
-                    st.session_state.pipeline_step = "review"
+                    st.session_state.pipeline_step = "done"
                     st.rerun()
                     
         with col_limits:
@@ -1622,7 +1702,6 @@ def run_app():
                         <div>⚖️ <b>Max 15 MB</b> per file (50 MB totali)</div>
                         <div>📄 <b>Max 20 pagine</b> per documento PDF</div>
                         <div>🖼️ <b>Max 20 Megapixel</b> per singola immagine</div>
-                        <div>✏️ <b>Max 10 problemi</b> per esecuzione</div>
                     </div>
                     <hr style='margin: 0.8rem 0; border: none; border-top: 1px solid #F1F5F9;' />
                     <div style='font-size: 0.8rem; color: #64748B; line-height: 1.4;'>
@@ -1633,167 +1712,7 @@ def run_app():
                 unsafe_allow_html=True
             )
 
-    # GESTIONE FASE 2: REVISIONE TRACCE (HUMAN-IN-THE-LOOP)
-    elif st.session_state.pipeline_step == "review":
-        rev_data = st.session_state.review_data
-        exercises = rev_data["exercises"]
-        img_dir = rev_data["img_dir"]
-        
-        st.success(f"✅ Rilevati con successo **{len(exercises)} problemi distinti**.")
-        st.info("📝 **Revisione Tracce:** Verifica e correggi se necessario il testo o le formule matematiche estratte prima di avviare la risoluzione.")
-        if "Teoria" in modalita_didattica:
-            st.info("📘 **Modalità Teoria e Spiegazioni Attiva:** Per ciascun esercizio verranno generati l'inquadramento teorico formale con concetti chiave e teoremi, la risoluzione commentata e l'interpretazione critica finale.")
-        elif "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica or "Apprendimento" in modalita_didattica or "Scaffolding" in modalita_didattica:
-            st.info("💡 **Modalità Apprendimento Attiva (Suggerimenti + Soluzione):** Per ciascun esercizio verranno generati testo e suggerimenti crescenti sulla prima pagina, e la soluzione estesa su una pagina separata.")
-        elif "Solo suggerimenti" in modalita_didattica or "Scheda" in modalita_didattica:
-            st.info("📋 **Modalità Scheda di Lavoro Attiva (Solo suggerimenti):** Verranno generati 3 suggerimenti crescenti e il solo risultato finale di verifica per l'autonomia dello studente.")
-        else:
-            st.info("📝 **Modalità Solo Soluzione Attiva:** Verrà generata direttamente la risoluzione passo-passo del problema.")
-        
-        for idx, ex in enumerate(exercises):
-            ex_id = ex.get("id", idx + 1)
-            with st.expander(f"📌 **Esercizio {ex_id}**", expanded=True):
-                # Mostra immagini associate se presenti
-                if ex.get("immagini_correlate"):
-                    st.markdown("##### 🖼️ Figure associate:")
-                    cols_img = st.columns(min(len(ex["immagini_correlate"]), 2))
-                    for c_idx, img_name in enumerate(ex["immagini_correlate"]):
-                        img_path = os.path.join(img_dir, img_name)
-                        if os.path.exists(img_path):
-                            with cols_img[c_idx % len(cols_img)]:
-                                st.image(img_path, caption=f"Figura: {img_name}", use_container_width=True)
-                
-                # Schede per modifica testo ed anteprima live
-                tab_edit, tab_preview = st.tabs(["✏️ Modifica Testo & Formule LaTeX", "👁️ Anteprima Matematica Live"])
-                
-                with tab_edit:
-                    current_text = st.text_area(
-                        f"Testo / Formule (LaTeX) - Esercizio {ex_id}:",
-                        value=ex.get("testo", ""),
-                        key=f"edit_ex_{ex_id}",
-                        height=120,
-                        label_visibility="collapsed"
-                    )
-                with tab_preview:
-                    preview_val = st.session_state.get(f"edit_ex_{ex_id}", ex.get("testo", ""))
-                    st.markdown(preview_val if preview_val else "*Nessun testo presente.*")
-                
-        st.write("")
-        col_submit, col_cancel = st.columns([1.6, 1.0], gap="medium")
-        with col_submit:
-            if st.button("🚀 Conferma Tracce e Genera Soluzioni", type="primary", use_container_width=True):
-                # Aggiorna il testo degli esercizi con le modifiche inserite dall'utente
-                for idx, ex in enumerate(exercises):
-                    ex_id = ex.get("id", idx + 1)
-                    if f"edit_ex_{ex_id}" in st.session_state:
-                        ex["testo"] = st.session_state[f"edit_ex_{ex_id}"]
-                        
-                sys_prompt = build_system_prompt(dettaglio, anno_scolastico, modalita_didattica)
-                
-                # Risoluzione sequenziale (Modulo 2)
-                solved_list = []
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                for idx, ex in enumerate(exercises):
-                    if idx > 0:
-                        time.sleep(6.0) # Rate limit delay per evitare 429
-                    ex_id = ex.get("id", idx + 1)
-                    ex_text = ex.get("testo", "")
-                    ex_imgs = ex.get("immagini_correlate", [])
-                    
-                    status_text.write(f"✍️ **Risoluzione Esercizio {ex_id} in corso...** ({idx+1}/{len(exercises)})")
-                    soluzione = solve_exercise_with_gemini(api_key, sys_prompt, ex_text, ex_imgs, ex_id, img_dir)
-                    
-                    solved_list.append({
-                        "id": ex_id,
-                        "testo": ex_text,
-                        "immagini": ex_imgs,
-                        "soluzione": soluzione
-                    })
-                    progress_bar.progress((idx + 1) / len(exercises))
-                    
-                status_text.success("🎉 Risoluzione completata! Generazione del file finale...")
-                
-                # Compilazione ed esportazione dell'output (Modulo 4)
-                template_docx_path = "template.docx" if os.path.exists("template.docx") else None
-                
-                markdown_out = "# Soluzione Esercizi di Matematica e Fisica\n\n"
-                markdown_out += f"**Profilo Studente:** {anno_scolastico}\n"
-                markdown_out += f"**Livello di dettaglio:** {dettaglio}\n"
-                markdown_out += f"**Contenuti inclusi:** {modalita_didattica}\n"
-                markdown_out += "\n---\n\n"
-                
-                for idx_ex, ex in enumerate(solved_list):
-                    soluzione_text = ex['soluzione']
-                    
-                    # Interruzione di pagina tra esercizi consecutivi
-                    if idx_ex > 0:
-                        markdown_out += "\n\n<!-- PAGE_BREAK -->\n\n"
-                        
-                    # Inserimento immagini associate alla traccia (rimangono sulla prima pagina con il testo)
-                    immagini_md = ""
-                    for img_name in ex["immagini"]:
-                        img_path = os.path.join(img_dir, img_name)
-                        if os.path.exists(img_path):
-                            img_abs_path = os.path.abspath(img_path).replace("\\", "/")
-                            immagini_md += f"![Immagine correlata]({img_abs_path})\n\n"
-                            
-                    if immagini_md:
-                        if "### Inquadramento Teorico" in soluzione_text:
-                            soluzione_text = soluzione_text.replace("### Inquadramento Teorico", immagini_md + "### Inquadramento Teorico")
-                        elif "### Guida alla risoluzione" in soluzione_text:
-                            soluzione_text = soluzione_text.replace("### Guida alla risoluzione", immagini_md + "### Guida alla risoluzione")
-                        elif "### Soluzione e Commento" in soluzione_text:
-                            soluzione_text = soluzione_text.replace("### Soluzione e Commento", immagini_md + "### Soluzione e Commento")
-                        elif "### Soluzione del problema" in soluzione_text:
-                            soluzione_text = soluzione_text.replace("### Soluzione del problema", immagini_md + "### Soluzione del problema")
-                        else:
-                            soluzione_text = immagini_md + soluzione_text
-                            
-                    # Se l'utente ha scelto la modalità apprendimento con suggerimenti e soluzione, garantiamo la separazione su 2 pagine distinte
-                    if "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica or "Apprendimento" in modalita_didattica or "Scaffolding" in modalita_didattica:
-                        if "<!-- PAGE_BREAK -->" not in soluzione_text:
-                            if "# Esercizio" in soluzione_text and "— Soluzione" in soluzione_text:
-                                soluzione_text = re.sub(r'(#+ Esercizio\s+\d+\s+—\s+Soluzione)', r'<!-- PAGE_BREAK -->\n\n\1', soluzione_text, count=1)
-                            elif "### Soluzione del problema" in soluzione_text:
-                                soluzione_text = soluzione_text.replace("### Soluzione del problema", f"<!-- PAGE_BREAK -->\n\n# Esercizio {ex['id']} — Soluzione del problema\n\n### Soluzione del problema")
-                            else:
-                                soluzione_text += "\n\n<!-- PAGE_BREAK -->\n\n"
-                                
-                    markdown_out += f"{soluzione_text}\n\n"
-                    
-                if output_format == "pdf":
-                    yaml_header = """---
-geometry: margin=2cm
----
-
-"""
-                    markdown_out = yaml_header + markdown_out
-                    
-                with st.spinner(f"Compilazione del documento .{output_format} con Pandoc in corso..."):
-                    file_data = generate_pandoc_output(markdown_out, output_format, template_docx_path)
-                    
-                st.session_state.completed_data = {
-                    "file_data": file_data,
-                    "output_format": output_format,
-                    "file_name": f"Soluzioni_Verifica.{output_format}",
-                    "solved_list": solved_list,
-                    "modalita_didattica": modalita_didattica
-                }
-                st.session_state.pipeline_step = "done"
-                st.rerun()
-                
-        with col_cancel:
-            if st.button("🔄 Annulla e Carica Nuovi File", use_container_width=True):
-                if rev_data.get("temp_work_dir") and os.path.exists(rev_data["temp_work_dir"]):
-                    shutil.rmtree(rev_data["temp_work_dir"], ignore_errors=True)
-                st.session_state.pipeline_step = "upload"
-                st.session_state.review_data = None
-                st.session_state.completed_data = None
-                st.rerun()
-
-    # GESTIONE FASE 3: DOWNLOAD ED ESPORTAZIONE
+    # GESTIONE FASE 2: DOWNLOAD ED ESPORTAZIONE
     elif st.session_state.pipeline_step == "done":
         comp_data = st.session_state.completed_data
         st.balloons()
@@ -1822,10 +1741,9 @@ geometry: margin=2cm
                 )
         with col_restart:
             if st.button("🔄 Elabora un altro compito", use_container_width=True):
-                if st.session_state.review_data and st.session_state.review_data.get("temp_work_dir"):
-                    shutil.rmtree(st.session_state.review_data["temp_work_dir"], ignore_errors=True)
+                if comp_data and comp_data.get("temp_work_dir") and os.path.exists(comp_data["temp_work_dir"]):
+                    shutil.rmtree(comp_data["temp_work_dir"], ignore_errors=True)
                 st.session_state.pipeline_step = "upload"
-                st.session_state.review_data = None
                 st.session_state.completed_data = None
                 st.rerun()
                 

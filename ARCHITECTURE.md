@@ -11,14 +11,14 @@
 
 **CorrettoreAutomatico** è una piattaforma server-side privata progettata per assistere docenti di Matematica e Fisica della scuola secondaria e media nella risoluzione, formattazione e composizione di compiti, verifiche e quesiti d'esame.
 
-Il sistema elabora documenti cartacei scansionati, compiti manoscritti o file digitali (fino a 10 quesiti per sessione), identifica e separa i singoli esercizi preservando figure e diagrammi, consente al docente di revisionare interattivamente le tracce (*Human-in-the-Loop*) e produce elaborati finali in **DOCX nativo con equazioni OMML modificabili** e **PDF tipografici ad alta leggibilità**.
+Il sistema elabora documenti cartacei scansionati, compiti manoscritti o file digitali (senza vincoli artificiali sul numero di quesiti, con delay di sicurezza anti-rate-limit), identifica e separa i singoli esercizi preservando figure e diagrammi, risolve sequenzialmente tutti i problemi e produce elaborati finali in **DOCX nativo con equazioni OMML modificabili** e **PDF tipografici ad alta leggibilità**.
 
 ```
- +-----------------------------------------------------------------------------------+
- |                             PIPELINE END-TO-END                                   |
- |                                                                                   |
- |  [1. Ingestion & Visione] ➔ [2. Revisione Tracce] ➔ [3. Risoluzione & Esportazione] |
- +-----------------------------------------------------------------------------------+
+ +-------------------------------------------------------------------+
+ |                    PIPELINE DIRETTA END-TO-END                    |
+ |                                                                   |
+ |  [1. Ingestion, Visione & Risoluzione] ➔ [2. Soluzioni & Download] |
+ +-------------------------------------------------------------------+
 ```
 
 ---
@@ -31,14 +31,13 @@ Il diagramma seguente illustra il ciclo di vita delle informazioni, dal caricame
 flowchart TD
     subgraph Client ["Client Browser"]
         U["Utente Docente"]
-        UI_Upload["1. Caricamento File\n(PDF, DOCX, TXT, PNG, JPG)"]
-        UI_Review["2. Revisione Tracce\n(Correzione Testo/LaTeX)"]
-        UI_Download["3. Download Soluzioni\n(.docx / .pdf)"]
+        UI_Upload["1. Caricamento File & Avvio\n(PDF, DOCX, TXT, PNG, JPG)"]
+        UI_Download["2. Download Soluzioni\n(.docx / .pdf)"]
     end
 
     subgraph AppServer ["Server Streamlit (Python)"]
         Guard["Guardrails & Validazione\n(Max 5 file, 15MB/f, 50MB tot)"]
-        TempWork["Workspace Temporaneo Univoco\n(tempfile.TemporaryDirectory)"]
+        TempWork["Workspace Temporaneo Univoco\n(tempfile.mkdtemp)"]
         
         subgraph Modulo1 ["Modulo 1: Ingestion & Visione"]
             Parser["Parser Formati\n(pypdf, PyMuPDF, python-docx, Pillow)"]
@@ -46,14 +45,10 @@ flowchart TD
             VisionGenAI["Chiamata Vision Gemini\n(Structured JSON Output)"]
         end
 
-        subgraph SessionState ["Streamlit SessionState"]
-            StateData["review_data:\n• exercises: [ {id, testo, immagini} ]\n• img_dir: workspace/images"]
-        end
-
         subgraph Modulo2 ["Modulo 2: Risoluzione Didattica"]
             Curriculum["Caricamento Profilo Didattico\n(curriculum/anno_X.md)"]
-            PromptBuild["Costruzione Prompt di Sistema\n(Whitelist strumenti / Blacklist metodi)"]
-            SolverGenAI["Risolutore Gemini + Code Execution\n(Rate limit con delay sequenziale)"]
+            PromptBuild["Costruzione Prompt di Sistema\n(Scaffolding, Teoria o Diretta)"]
+            SolverGenAI["Risolutore Gemini + Code Execution\n(Delay sequenziale 6.0s)"]
         end
 
         subgraph Modulo3 ["Modulo 3: Sanitizzazione LaTeX"]
@@ -70,7 +65,7 @@ flowchart TD
     end
 
     subgraph CloudAI ["Google Gemini AI"]
-        GeminiFlash["gemini-3.7-flash / gemini-2.5-flash\n• Visione multimodale\n• Code Execution Python\n• Schema Enforcement"]
+        GeminiFlash["gemini-3.8-flash / gemini-2.5-flash\n• Visione multimodale\n• Code Execution Python\n• Schema Enforcement"]
     end
 
     %% Flusso Principale
@@ -81,10 +76,7 @@ flowchart TD
     Parser --> Raster
     Raster --> VisionGenAI
     VisionGenAI <--> GeminiFlash
-    VisionGenAI --> StateData
-    StateData --> UI_Review
-
-    UI_Review -->|Conferma Tracce| Modulo2
+    VisionGenAI --> Modulo2
     Modulo2 --> Curriculum
     Curriculum --> PromptBuild
     PromptBuild --> SolverGenAI
@@ -172,13 +164,9 @@ CorrettoreAutomatico/
      }
      ```
 
-### Modulo 2: Revisione Tracce (Human-in-the-Loop)
-* Interfaccia a schede che consente al docente di:
-  * Ispezionare le figure correlate estratte;
-  * Correggere o integrare il testo e le formule LaTeX;
-  * Visualizzare l'anteprima matematica in tempo reale (*Live KaTeX rendering*).
-
-### Modulo 3: Risoluzione Didattica, Vincoli Negativi & Scaffolding Progressivo
+### Modulo 2: Risoluzione Didattica Diretta, Vincoli Negativi & Scaffolding Progressivo
+* Pipeline automatica a esecuzione diretta: nessun passaggio intermedio superfluo, massima efficienza operativa per il docente.
+* Gestione intelligente del rate limit tramite delay programmato (6.0s tra chiamate consecutive) che garantisce la sicurezza della quota gratuita Gemini API senza vincoli artificiosi sul numero di esercizi.
 * Caricamento del file `curriculum/anno_X.md` corrispondente alla classe selezionata.
 * Generazione del prompt didattico con:
   * **Tipologia e Contenuti del Documento (Configurabili nella Sidebar Sinistra)**:
@@ -197,12 +185,12 @@ CorrettoreAutomatico/
   * **Code Execution**: Risoluzione numerica verificata tramite interprete Python interno di Gemini per evitare allucinazioni aritmetiche.
   * **Rate Limiting**: Delay di 6.0s sequenziale tra le chiamate per garantire stabilità contro errori HTTP 429.
 
-### Modulo 4: Sanitizzazione LaTeX a 2-Fasi
+### Modulo 3: Sanitizzazione LaTeX a 2-Fasi
 Prima del passaggio a Pandoc, il testo subisce una sanificazione strutturale per prevenire crash del compilatore TeX:
 * **Fase 1 (Pre-Parsing)**: Bilanciamento di delimitatori `$` spaiati, escape del simbolo percentuale `%` fuori da math mode, rimozione di `\cdot` impropri dentro `\text{...}`, correzione di parentesi `\left` / `\right` non accoppiate.
 * **Fase 2 (Strutturale TeX)**: Bilanciamento e chiusura di graffe `{...}` orfane, rimozione di radici vuote `\sqrt{ }`, isolamento comandi matematici non delimitati.
 
-### Modulo 5: Compilazione ed Esportazione Artefatti
+### Modulo 4: Compilazione ed Esportazione Artefatti
 * **Gestione Universale Interruzioni di Pagina (`<!-- PAGE_BREAK -->`)**:
   * In modalità *Sia soluzione che suggerimenti*, il sistema inserisce programmaticamente un page-break tra testo+indizi e la soluzione, oltre a separare gli esercizi consecutivi:
     * Per **DOCX**: Traduzione in blocco nativo OpenXML ````{=openxml}<w:p><w:r><w:br w:type="page"/></w:r></w:p>````, garantendo che Word crei una reale interruzione di pagina senza alterare l'XML.
