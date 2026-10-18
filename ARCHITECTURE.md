@@ -181,13 +181,17 @@ CorrettoreAutomatico/
 ### Modulo 3: Risoluzione Didattica, Vincoli Negativi & Scaffolding Progressivo
 * Caricamento del file `curriculum/anno_X.md` corrispondente alla classe selezionata.
 * Generazione del prompt didattico con:
-  * **Contenuti da Includere (Configurabili nella Sidebar Sinistra)**:
-    * *Sia soluzione che suggerimenti* (Default): Sequenza di 3 suggerimenti progressivi di chiarezza crescente sulla prima pagina, seguiti da un'interruzione di pagina (`<!-- PAGE_BREAK -->`) e dalla soluzione estesa su una seconda pagina distinta.
+  * **Tipologia e Contenuti del Documento (Configurabili nella Sidebar Sinistra)**:
+    * *Documento con Teoria e Spiegazioni* (Nuovo): Compendio didattico completo comprendente:
+      1. `Inquadramento Teorico e Prerequisiti`: richiamo esplicito di definizioni, leggi fisiche o teoremi matematici, condizioni di validità e formule notevoli;
+      2. `Soluzione e Commento Didattico`: risoluzione passo-passo che connette ogni passaggio algebrico al principio teorico corrispondente;
+      3. `Considerazioni Critiche e Conclusioni`: interpretazione fisica o geometrica nel piano cartesiano e verifica dimensionale del risultato.
+    * *Documento di Apprendimento (Suggerimenti + Soluzione)*: Sequenza di 3 suggerimenti progressivi di chiarezza crescente sulla prima pagina, seguiti da un'interruzione di pagina (`<!-- PAGE_BREAK -->`) e dalla soluzione estesa su una seconda pagina distinta.
       1. `Suggerimento 1 (Orientamento concettuale e strategia)`: inquadramento qualitativo senza formule risolutive o numeri;
       2. `Suggerimento 2 (Modello e relazioni chiave)`: formalizzazione delle leggi fisiche/geometriche e impostazione del sistema;
       3. `Suggerimento 3 (Passaggio di sblocco operativo)`: indicazione tecnica sul passaggio critico (es. sostituzione, identità algebrica).
-    * *Solo soluzione*: Risoluzione didattica completa passo-passo senza suggerimenti intermedi.
-    * *Solo suggerimenti*: I 3 suggerimenti progressivi seguiti esclusivamente dal risultato numerico/simbolico finale di verifica per l'autonomia dello studente (senza svolgimento esteso).
+    * *Documento di Apprendimento (Solo suggerimenti)*: I 3 suggerimenti progressivi seguiti esclusivamente dal risultato numerico/simbolico finale di verifica per l'autonomia dello studente (senza svolgimento esteso).
+    * *Solo soluzione diretta*: Risoluzione didattica completa passo-passo senza teoria preliminare o suggerimenti intermedi.
   * **Whitelist**: Metodi didattici ammessi per l'anno di corso selezionato.
   * **Blacklist (Vincoli Negativi)**: Blocco esplicito di tecniche universitarie non ancora introdotte (es. no derivate in 1°-4° anno, no sviluppi di Taylor $>1$, no integrali multipli).
   * **Code Execution**: Risoluzione numerica verificata tramite interprete Python interno di Gemini per evitare allucinazioni aritmetiche.

@@ -16,18 +16,46 @@ from docx import Document
 import pypandoc
 
 def get_api_key():
-    """Tenta di caricare l'API key di Gemini da variabili d'ambiente o st.secrets."""
+    """Tenta di caricare l'API key di Gemini da session_state, variabili d'ambiente, st.secrets, secrets.toml locale o api_key.txt."""
+    # 0. Prova da session_state (se inserita a runtime dall'utente)
+    if "custom_gemini_api_key" in st.session_state and st.session_state["custom_gemini_api_key"]:
+        return st.session_state["custom_gemini_api_key"].strip()
+
     # 1. Prova da variabile d'ambiente
     api_key = os.environ.get("GEMINI_API_KEY")
-    if api_key:
+    if api_key and api_key.strip():
         return api_key.strip()
         
-    # 2. Prova da st.secrets
+    # 2. Prova da st.secrets (globale o locale standard)
     try:
-        if "GEMINI_API_KEY" in st.secrets:
-            return st.secrets["GEMINI_API_KEY"].strip()
-    except:
+        if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
+            return str(st.secrets["GEMINI_API_KEY"]).strip()
+    except Exception:
         pass
+
+    # 3. Prova direttamente dal file .streamlit/secrets.toml relativo alla cartella dello script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_secrets = os.path.join(script_dir, ".streamlit", "secrets.toml")
+    if os.path.exists(local_secrets):
+        try:
+            import tomllib
+            with open(local_secrets, "rb") as f:
+                data = tomllib.load(f)
+                if "GEMINI_API_KEY" in data and data["GEMINI_API_KEY"]:
+                    return str(data["GEMINI_API_KEY"]).strip()
+        except Exception:
+            pass
+
+    # 4. Prova da api_key.txt nella cartella dello script
+    local_txt = os.path.join(script_dir, "api_key.txt")
+    if os.path.exists(local_txt):
+        try:
+            with open(local_txt, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content:
+                    return content
+        except Exception:
+            pass
             
     return None
 
@@ -625,7 +653,39 @@ def build_system_prompt(dettaglio, anno_scolastico, modalita_didattica="Sia solu
 - Interpretazione geometrica e critica: Descrivi il significato grafico nel piano cartesiano e analizza criticamente i risultati ottenuti."""
         
     # Sezione Scaffolding Didattico e Struttura Output
-    if "Sia soluzione che suggerimenti" in modalita_didattica or "Scaffolding" in modalita_didattica:
+    if "Teoria" in modalita_didattica:
+        struttura_output_istruzioni = """E. STRUTTURA OBBLIGATORIA DELL'OUTPUT (DOCUMENTO CON TEORIA E SPIEGAZIONI APPROFONDITE):
+Devi strutturare ogni esercizio come un compendio didattico completo. Prima dello svolgimento matematico, DEVI fornire un inquadramento teorico formale dei prerequisiti e dei teoremi coinvolti, e concludere con considerazioni critiche/geometriche sul risultato:
+
+1. **Inquadramento Teorico e Prerequisiti:**
+   - Enuncia con precisione le definizioni, le leggi fisiche o i teoremi matematici pertinenti applicati in questo problema.
+   - Spiega PERCHÉ si applicano tali principi e quali sono le condizioni di validità (es. conservazione dell'energia meccanica in assenza di forze dissipative, condizioni di esistenza dei radicali o disequazioni, secondo principio della dinamica).
+   - Richiama eventuali formule notevoli o identità che saranno utilizzate.
+
+2. **Soluzione e Commento Didattico:**
+   - Esposizione passaggio per passaggio, commentando esplicitamente la connessione tra ogni operazione algebrica/analitica e il principio teorico di riferimento.
+
+3. **Considerazioni Critiche e Conclusioni:**
+   - Spiega il significato fisico o l'interpretazione geometrica nel piano cartesiano del risultato ottenuto.
+   - Esegui una verifica di coerenza qualitativa o dimensionale delle unità di misura.
+
+All'interno di ogni capitolo/esercizio, il testo deve contenere ESCLUSIVAMENTE questi paragrafi:
+
+# Esercizio X
+### Testo del problema
+[Riporta qui la traccia originale dell'esercizio]
+
+### Inquadramento Teorico e Prerequisiti
+> 📚 **Concetti e Teoremi Chiave:**
+> - [Definizioni, leggi e teoremi matematici o fisici applicati]
+> - [Condizioni di validità e motivazione pedagogica della strategia]
+
+### Soluzione e Commento Didattico
+[Esposizione della risoluzione didattica completa e ampiamente commentata conforme al livello di dettaglio richiesto]
+
+### Considerazioni Critiche e Conclusioni
+[Interpretazione geometrica o fisica del risultato e verifica di plausibilità]"""
+    elif "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica or "Scaffolding" in modalita_didattica:
         struttura_output_istruzioni = """E. STRUTTURA OBBLIGATORIA DELL'OUTPUT (SUGGERIMENTI PROGRESSIVI + SOLUZIONE SU PAGINE SEPARATE):
 Devi imporre una struttura fissa per ogni esercizio. Prima della soluzione completa, DEVI fornire una sequenza di 3 SUGGERIMENTI PROGRESSIVI di chiarezza crescente, concepiti per sbloccare gradualmente lo studente.
 CRITICO: Tra i suggerimenti e la soluzione DEVI inserire il tag <!-- PAGE_BREAK --> per separare fisicamente il testo+suggerimenti dalla soluzione (andranno impaginati su due pagine distinte).
@@ -1366,16 +1426,17 @@ def run_app():
             index=2
         )
         
-        # 2. Contenuti da includere (Soluzione / Suggerimenti)
+        # 2. Contenuti e finalità del documento
         modalita_didattica = st.selectbox(
-            "💡 Contenuti da includere",
+            "💡 Tipologia e contenuti del documento",
             options=[
-                "Sia soluzione che suggerimenti",
-                "Solo soluzione",
-                "Solo suggerimenti"
+                "Documento con Teoria e Spiegazioni",
+                "Documento di Apprendimento (Suggerimenti + Soluzione)",
+                "Documento di Apprendimento (Solo suggerimenti)",
+                "Solo soluzione diretta"
             ],
             index=0,
-            help="Seleziona cosa includere: la soluzione completa, solo la guida a suggerimenti progressivi per studenti, oppure entrambi su pagine separate (con interruzione di pagina)."
+            help="Seleziona la finalità dell'elaborato: compendio con richiami di teoria e spiegazioni approfondite, scheda di apprendimento a indizi progressivi per studenti, o svolgimento diretto."
         )
         
         # 3. Anno scolastico
@@ -1408,6 +1469,31 @@ def run_app():
         )
         
         st.write("---")
+        with st.expander("🔑 Configurazione API Key Gemini", expanded=(not api_key)):
+            if api_key:
+                st.caption(f"🟢 **API Key attiva:** `{api_key[:6]}...{api_key[-4:]}`")
+            else:
+                st.caption("🔴 **Nessuna API Key rilevata**")
+            
+            sidebar_key = st.text_input("Inserisci/Aggiorna API Key:", type="password", key="sidebar_api_key_input", placeholder="AIzaSy...")
+            if st.button("💾 Salva Chiave", key="save_sidebar_key", use_container_width=True):
+                if sidebar_key and sidebar_key.strip():
+                    st.session_state["custom_gemini_api_key"] = sidebar_key.strip()
+                    try:
+                        script_dir = os.path.dirname(os.path.abspath(__file__))
+                        sec_dir = os.path.join(script_dir, ".streamlit")
+                        os.makedirs(sec_dir, exist_ok=True)
+                        with open(os.path.join(sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
+                            f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{sidebar_key.strip()}"\n')
+                        user_sec_dir = os.path.expanduser("~/.streamlit")
+                        os.makedirs(user_sec_dir, exist_ok=True)
+                        with open(os.path.join(user_sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
+                            f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{sidebar_key.strip()}"\n')
+                    except Exception:
+                        pass
+                    st.success("Chiave salvata!")
+                    st.rerun()
+
         st.markdown(
             "<div style='display: flex; align-items: center; gap: 8px; color: #2D3748; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem;'>"
             "<span>🎓</span><span>Realizzato dal Prof. Tommaso Patti</span>"
@@ -1444,11 +1530,32 @@ def run_app():
                 if not api_key:
                     st.error(
                         "### ⚠️ Gemini API Key Mancante\n"
-                        "Non è stata rilevata alcuna chiave API per Gemini. Per risolvere:\n\n"
-                        "1. Imposta la variabile d'ambiente **`GEMINI_API_KEY`**.\n"
-                        "2. Oppure configura il segreto in **`st.secrets`**.\n"
-                        "3. Ricarica la pagina del browser."
+                        "Non è stata rilevata automaticamente alcuna chiave API per Gemini."
                     )
+                    st.info("💡 Inserisci la tua API Key di Gemini per abilitare subito l'elaborazione:")
+                    col_k_in, col_k_btn = st.columns([2.5, 1.2])
+                    with col_k_in:
+                        user_k = st.text_input("Gemini API Key:", type="password", key="main_api_key_input", placeholder="AIzaSy...", label_visibility="collapsed")
+                    with col_k_btn:
+                        if st.button("💾 Salva e Continua", type="primary", use_container_width=True):
+                            if user_k and user_k.strip():
+                                st.session_state["custom_gemini_api_key"] = user_k.strip()
+                                try:
+                                    script_dir = os.path.dirname(os.path.abspath(__file__))
+                                    sec_dir = os.path.join(script_dir, ".streamlit")
+                                    os.makedirs(sec_dir, exist_ok=True)
+                                    with open(os.path.join(sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
+                                        f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{user_k.strip()}"\n')
+                                    user_sec_dir = os.path.expanduser("~/.streamlit")
+                                    os.makedirs(user_sec_dir, exist_ok=True)
+                                    with open(os.path.join(user_sec_dir, "secrets.toml"), "w", encoding="utf-8") as f:
+                                        f.write(f'# Incolla qui la tua API Key di Gemini\nGEMINI_API_KEY = "{user_k.strip()}"\n')
+                                except Exception:
+                                    pass
+                                st.success("✅ Chiave salvata con successo!")
+                                st.rerun()
+                            else:
+                                st.warning("Inserisci una chiave valida.")
                     st.stop()
                     
                 if len(uploaded_files) > 5:
@@ -1532,10 +1639,12 @@ def run_app():
         
         st.success(f"✅ Rilevati con successo **{len(exercises)} problemi distinti**.")
         st.info("📝 **Revisione Tracce:** Verifica e correggi se necessario il testo o le formule matematiche estratte prima di avviare la risoluzione.")
-        if modalita_didattica == "Sia soluzione che suggerimenti":
-            st.info("💡 **Modalità Completa Attiva:** Per ciascun esercizio verranno generati testo e suggerimenti crescenti sulla prima pagina, e la soluzione estesa su una pagina separata.")
-        elif modalita_didattica == "Solo suggerimenti":
-            st.info("📋 **Modalità Solo Suggerimenti Attiva:** Verranno generati 3 suggerimenti crescenti e il solo risultato finale di verifica per l'autonomia dello studente.")
+        if "Teoria" in modalita_didattica:
+            st.info("📘 **Modalità Teoria e Spiegazioni Attiva:** Per ciascun esercizio verranno generati l'inquadramento teorico formale con concetti chiave e teoremi, la risoluzione commentata e l'interpretazione critica finale.")
+        elif "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica:
+            st.info("💡 **Modalità Apprendimento Attiva (Suggerimenti + Soluzione):** Per ciascun esercizio verranno generati testo e suggerimenti crescenti sulla prima pagina, e la soluzione estesa su una pagina separata.")
+        elif "Solo suggerimenti" in modalita_didattica:
+            st.info("📋 **Modalità Scheda di Lavoro Attiva (Solo suggerimenti):** Verranno generati 3 suggerimenti crescenti e il solo risultato finale di verifica per l'autonomia dello studente.")
         else:
             st.info("📝 **Modalità Solo Soluzione Attiva:** Verrà generata direttamente la risoluzione passo-passo del problema.")
         
@@ -1629,15 +1738,19 @@ def run_app():
                             immagini_md += f"![Immagine correlata]({img_abs_path})\n\n"
                             
                     if immagini_md:
-                        if "### Guida alla risoluzione" in soluzione_text:
+                        if "### Inquadramento Teorico" in soluzione_text:
+                            soluzione_text = soluzione_text.replace("### Inquadramento Teorico", immagini_md + "### Inquadramento Teorico")
+                        elif "### Guida alla risoluzione" in soluzione_text:
                             soluzione_text = soluzione_text.replace("### Guida alla risoluzione", immagini_md + "### Guida alla risoluzione")
+                        elif "### Soluzione e Commento" in soluzione_text:
+                            soluzione_text = soluzione_text.replace("### Soluzione e Commento", immagini_md + "### Soluzione e Commento")
                         elif "### Soluzione del problema" in soluzione_text:
                             soluzione_text = soluzione_text.replace("### Soluzione del problema", immagini_md + "### Soluzione del problema")
                         else:
                             soluzione_text = immagini_md + soluzione_text
                             
-                    # Se l'utente ha scelto "Sia soluzione che suggerimenti", garantiamo la separazione su 2 pagine distinte
-                    if modalita_didattica == "Sia soluzione che suggerimenti":
+                    # Se l'utente ha scelto la modalità apprendimento con suggerimenti e soluzione, garantiamo la separazione su 2 pagine distinte
+                    if "Sia soluzione che suggerimenti" in modalita_didattica or "Suggerimenti + Soluzione" in modalita_didattica:
                         if "<!-- PAGE_BREAK -->" not in soluzione_text:
                             if "# Esercizio" in soluzione_text and "— Soluzione" in soluzione_text:
                                 soluzione_text = re.sub(r'(#+ Esercizio\s+\d+\s+—\s+Soluzione)', r'<!-- PAGE_BREAK -->\n\n\1', soluzione_text, count=1)

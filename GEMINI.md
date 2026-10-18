@@ -18,13 +18,14 @@ Costruire un'applicazione server-side privata che:
 5. generi output `.docx` con equazioni Word native modificabili e `.pdf` di qualità;
 6. possa essere usata online da un piccolo gruppo di collaboratori autorizzati senza esporre segreti, documenti o quota API.
 
-Il target iniziale è un pilot privato tra collaboratori. Non progettare o dichiarare un servizio pubblico per studenti finché non sono stati superati i gate di sicurezza, privacy, affidabilità e qualità definiti qui.
+Il target iniziale è un pilot privato tra collaboratori. L'infrastruttura di hosting designata ed operativa è un **server VPS Linux Aruba**, gestito come servizio di sistema `systemd` (`correttore.service`) e aggiornato via Continuous Deployment (CD) sicuro da GitHub Actions via SSH (`.github/workflows/deploy.yml`). Non progettare o dichiarare un servizio pubblico per studenti finché non sono stati superati i gate di sicurezza, privacy, affidabilità e qualità definiti qui.
 
 ## 2. Decisioni architetturali vincolanti
 
-### 2.1 Un solo prodotto server-side
+### 2.1 Un solo prodotto server-side e hosting VPS Aruba
 
 - La direzione ufficiale è Python + Streamlit con tutte le chiamate Gemini eseguite sul server.
+- **Hosting e Continuous Deployment su VPS Aruba**: L'applicazione di produzione risiede sul server VPS Linux Aruba nel percorso `/root/CorrettoreAutomatico`. L'orchestrazione del processo è delegata a `systemd` tramite il servizio `correttore.service`. Ogni commit verificato e pushato sul branch `main` innesca la pipeline GitHub Actions (`.github/workflows/deploy.yml`) per eseguire in modo sicuro l'aggiornamento (`git pull`) e il riavvio automatico del servizio.
 - `index.html` è una variante legacy non distribuibile: contiene una credenziale compromessa, duplica la logica, ha vulnerabilità XSS e usa dipendenze browser insicure. Non aggiungere nuove funzioni a questa variante e non pubblicarla.
 - La rimozione definitiva di `index.html` e la bonifica della cronologia Git richiedono un'attività esplicita e verificata; fino ad allora deve essere trattato come materiale in quarantena.
 - Nessuna chiave provider, token o logica privilegiata può essere presente nel browser.
@@ -79,6 +80,7 @@ Una modifica che viola questa sezione non è accettabile anche se rende il proto
 ### 3.1 Segreti
 
 - Caricare `GEMINI_API_KEY` esclusivamente da `st.secrets` o variabili d'ambiente server-side.
+- **Segreti su VPS Aruba**: Sul server Aruba, la chiave `GEMINI_API_KEY` deve risiedere esclusivamente nell'ambiente protetto del server (variabili d'ambiente del servizio `correttore.service`, `/root/.streamlit/secrets.toml` sul server o salvata a runtime tramite l'interfaccia protetta) e **mai** essere inclusa nel repository Git o nei sorgenti.
 - Non leggere nuove credenziali da file versionabili come `api_key.txt`; il supporto legacy va rimosso durante l'hardening.
 - Non inserire segreti in sorgenti, HTML, URL, query string, errori, log, telemetria, test, screenshot o fixture.
 - La chiave presente nella cronologia Git va considerata compromessa: prima di qualsiasi chiamata reale o deploy, l'utente deve confermarne revoca e rotazione.
@@ -339,7 +341,9 @@ Prima del handoff:
 
 ### Gate 2 — pilot privato
 
-- autenticazione/allowlist;
+- deploy operativo su server VPS Linux Aruba con demone systemd `correttore.service` e CI/CD GitHub Actions via SSH;
+- configurazione sicura dei segreti server-side sul VPS senza esposizione Git;
+- autenticazione/allowlist e protezione accessi;
 - isolamento tra utenti verificato;
 - quota/rate limit/cancel;
 - privacy notice e retention;
