@@ -11,11 +11,11 @@ Questo file è la fonte di verità normativa del progetto. Ogni coding agent, in
 
 Costruire un'applicazione server-side privata che:
 
-1. riceva PDF, DOCX, TXT, PNG e JPEG contenenti fino a 10 esercizi di matematica o fisica;
+1. riceva PDF, DOCX, TXT, PNG e JPEG contenenti esercizi di matematica o fisica (senza tetti artificiali sul numero di quesiti, gestiti con rate limit sequenziale);
 2. estragga testo e immagini, inclusi documenti scansionati o scritti a mano;
-3. consenta all'utente di verificare e correggere le tracce riconosciute;
-4. identifichi e risolva gli esercizi separatamente tramite Gemini;
-5. generi output `.docx` con equazioni Word native modificabili e `.pdf` di qualità;
+3. identifichi e separi automaticamente i singoli esercizi tramite visione multimodale;
+4. risolva sequenzialmente tutti gli esercizi secondo la finalità didattica selezionata (Teoria e Spiegazioni, Scaffolding con suggerimenti, Scheda studenti o Soluzione diretta);
+5. generi output `.docx` con equazioni Word native modificabili e `.pdf` di qualità tipografica;
 6. possa essere usata online da un piccolo gruppo di collaboratori autorizzati senza esporre segreti, documenti o quota API.
 
 Il target iniziale è un pilot privato tra collaboratori. L'infrastruttura di hosting designata ed operativa è un **server VPS Linux Aruba**, gestito come servizio di sistema `systemd` (`correttore.service`) e aggiornato via Continuous Deployment (CD) sicuro da GitHub Actions via SSH (`.github/workflows/deploy.yml`). Non progettare o dichiarare un servizio pubblico per studenti finché non sono stati superati i gate di sicurezza, privacy, affidabilità e qualità definiti qui.
@@ -112,7 +112,7 @@ Limiti predefiniti del pilot, modificabili solo insieme a test e documentazione:
 - massimo 15 MB per file e 50 MB complessivi;
 - massimo 20 pagine per PDF;
 - massimo 20 megapixel per immagine/pagina rasterizzata;
-- massimo 10 esercizi identificati;
+- nessun limite rigido sul numero di esercizi (la sicurezza della quota gratuita Gemini è garantita dal delay sequenziale di 6.0s tra le chiamate);
 - timeout esplicito per parsing, OCR, chiamata AI e rendering.
 
 Ulteriori regole:
@@ -158,14 +158,10 @@ Ulteriori regole:
 
 ## 4. Contratto funzionale
 
-### 4.1 Flusso UX target
+### 4.1 Flusso UX target (Pipeline Diretta a 2 Fasi)
 
-1. **Informativa e configurazione**: dettaglio, anno, indirizzo, formato e modalità multi-file.
-2. **Upload validato**: limiti e tipi mostrati prima della selezione; errori specifici per file.
-3. **Revisione input**: anteprima delle tracce identificate e possibilità di correggere testo, ordine, raggruppamento e immagini associate.
-4. **Elaborazione**: progresso per fase e per esercizio, tempo stimato, annullamento e retry selettivo.
-5. **Revisione output**: anteprima sicura, indicazione del modello/fallback usato e possibilità di rigenerare un singolo esercizio.
-6. **Esportazione**: DOCX/PDF o ZIP, seguita dal cleanup del job.
+1. **Configurazione e Caricamento**: selezione del livello di dettaglio, anno scolastico, finalità didattica (Teoria e Spiegazioni, Scaffolding con suggerimenti, Scheda studenti o Soluzione diretta) e formato di output; caricamento file con limiti verificati.
+2. **Risoluzione Diretta ed Esportazione**: estrazione testi e immagini ad alta risoluzione (150 DPI), identificazione e separazione automatica dei singoli quesiti tramite visione multimodale, risoluzione sequenziale con delay anti-rate-limit (6.0s), sanitizzazione formule LaTeX a due fasi e compilazione immediata DOCX (OMML) e PDF con anteprima interattiva e download.
 
 ### 4.2 Input
 
@@ -181,7 +177,7 @@ Ulteriori regole:
 - Mantenere insieme i sottoquesiti correlati.
 - Deduplicare soltanto quando la confidenza è sufficiente e rendere la decisione visibile all'utente.
 - Conservare provenienza del file/pagina e associazione agli asset.
-- Non permettere più di 10 esercizi senza conferma o nuova policy.
+- Elaborazione sequenziale senza tetti artificiali, protetta dal rate limiting temporale (6.0s).
 
 ### 4.4 Soluzione didattica
 
